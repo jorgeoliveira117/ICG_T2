@@ -2,6 +2,8 @@ import * as THREE from '../libs/three.module.js';
 import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { RGBELoader } from '../libs/RGBELoader.js';
 import { OrbitControls } from '../libs/OrbitControls.js';
+import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
+
 
 class Game{
 	constructor(){
@@ -49,8 +51,9 @@ class Game{
 		this.scene.add(light);
 		this.light = light;
 
-		const helper = new THREE.CameraHelper(light.shadow.camera);
-		this.scene.add(helper);
+		// Camera helper to visualize shadows
+		//const helper = new THREE.CameraHelper(light.shadow.camera);
+		//this.scene.add(helper);
 
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true } );
 		this.renderer.shadowMap.enabled = true;
@@ -67,6 +70,7 @@ class Game{
 		
 		window.addEventListener('resize', this.resize.bind(this) );
         
+		this.initMouseHandler();
 	}
 	
     resize(){
@@ -83,6 +87,12 @@ class Game{
         const self = this;
         
     }
+
+	initPathfinding(navmesh){
+		this.pathfinder = new Pathfinding();
+		this.pathfinder.setZoneData('map', Pathfinding.createZone(navmesh.geometry, 0.02));
+		//if(this.npcHandler?.gltf !== undefined) this.npcHandler.initNPCs();
+	}
     
 	load(){
         this.loadEnvironment();
@@ -106,9 +116,10 @@ class Game{
 						//console.log(child.name);
 						if(child.name.includes("NavMesh")){
 							console.log("Found a navmesh");
-							child.visible = false;
 							this.navmesh = child;
-							// console.log(this.navmesh)
+							child.material.transparent = true;
+							child.material.opacity = 0.3;
+							child.material.visible = false;
 						}
 						else{
 							child.castShadow = true;
@@ -120,6 +131,9 @@ class Game{
 						}
 					}
 				});
+
+				this.scene.add(this.navmesh);
+				this.initPathfinding(this.navmesh);
 
 				for(let mat in mergeObjects){
 					//console.log(mat + " - " +  mergeObjects[mat].length)
@@ -251,6 +265,33 @@ class Game{
 		);
 	}			
     
+	// Adapted from
+	// https://threejs.org/docs/#api/en/core/Raycaster
+	initMouseHandler(){
+		const raycaster = new THREE.Raycaster();
+    	this.renderer.domElement.addEventListener( 'click', raycast, false );
+			
+    	const self = this;
+    	const mouse = { x:0, y:0 };
+    	
+    	function raycast(e){
+    		// Get pointer position in normalized device coordinates
+			mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+			mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+
+			// update the picking ray with the camera and pointer position
+			raycaster.setFromCamera( mouse, self.camera );    
+
+			// calculate intersection with navmesh
+			const intersects = raycaster.intersectObject( self.navmesh );
+			
+			if (intersects.length > 0){
+				const pt = intersects[0].point;
+				console.log(pt);
+			}	
+		}
+    }
+
 	render() {
 		const dt = this.clock.getDelta();
 
