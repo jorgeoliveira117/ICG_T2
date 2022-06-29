@@ -6,6 +6,18 @@ import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
 import { NPCHandler } from './NPCHandler.js';
 import { PlayerHandler } from './PlayerHandler.js';
 
+const SPAWN_POINTS = [
+	new THREE.Vector3(-59.89253460336165, 4.801882704642674, -64.02237971170358),
+	new THREE.Vector3(-59.89253460336165, 4.801882704642674, -64.02237971170358),
+	new THREE.Vector3(48.23330137765365, 2.5053315403517527, -45.91246836694988),
+	new THREE.Vector3(6.117558460257719, 0.13086750604633665, -16.74297454263569),
+	new THREE.Vector3(2.5212040794956607, 4.312172060219335, 37.67442985246025),
+	new THREE.Vector3(-43.506370164704535, 4.704693220507739, 10.533826885014435),
+	new THREE.Vector3(51.4278128024145, 0.1355361954812651, 50.63703831154808),
+	new THREE.Vector3(18.372744888597296, 0.13086730040838518, -15.212461781497977),
+	new THREE.Vector3(8.661079461473328, 13.636080965519941, -28.464553121437188),
+	new THREE.Vector3(-61.81534402200036, 9.65949306492824, -13.94053832576816)
+];
 
 class Game{
 	constructor(){
@@ -92,14 +104,14 @@ class Game{
 	initPathfinding(navmesh){
 		this.pathfinder = new Pathfinding();
 		this.pathfinder.setZoneData('map', Pathfinding.createZone(navmesh.geometry, 0.02));
-		//if(this.npcHandler?.gltf !== undefined) this.npcHandler.initNPCs();
+		if(this.npcHandler?.gltf !== undefined) this.npcHandler.initNPCs();
 		if(this.playerHandler?.gltf !== undefined) this.playerHandler.initPlayer();
 	}
     
 	load(){
         this.loadEnvironment();
 		this.playerHandler = new PlayerHandler(this);
-		//this.npcHandler = new NPCHandler(this);
+		this.npcHandler = new NPCHandler(this);
     }
 
 	startRendering(){
@@ -127,7 +139,7 @@ class Game{
 							this.navmesh = child;
 							child.material.transparent = true;
 							child.material.opacity = 0.3;
-							//child.material.visible = false;
+							child.material.visible = false;
 						}
 						else{
 							child.castShadow = true;
@@ -265,7 +277,6 @@ class Game{
 				this.renderer.setAnimationLoop(this.render.bind(this));
 			},
 			xhr => {
-
 			},
 			err => {
 				console.error( err );
@@ -273,11 +284,18 @@ class Game{
 		);
 	}			
     
+	get randomSpawnpoint(){
+		const index = Math.floor(Math.random()*SPAWN_POINTS.length);
+		return SPAWN_POINTS[index];
+	}
+
 	render() {
 		const dt = this.clock.getDelta();
 
 		if(this.playerHandler !== undefined)
 			this.playerHandler.update(dt);
+		if(this.npcHandler !== undefined)
+			this.npcHandler.update(dt);
 		//console.log(this.camera.position)
         this.renderer.render( this.scene, this.camera );
     }

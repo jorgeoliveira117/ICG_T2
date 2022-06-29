@@ -1,14 +1,9 @@
 import * as THREE from '../libs/three.module.js';
 
-// Sources:
-// https://threejs.org/docs/#api/en/animation/AnimationMixer
-// https://www.youtube.com/watch?v=3CYljFpF4ds
-// https://github.com/donmccurdy/three-pathfinding
-
-class Player{
+class NPC{
 	constructor(options){
-		this.name = "Player";
-		
+		this.name = options.name | "NPC"; 
+
 		options.game.scene.add(options.object);
 		
 		this.object = options.object;
@@ -25,6 +20,8 @@ class Player{
 		// Look to the center of the map
 		this.object.lookAt(new THREE.Vector3(0, this.object.position.y, 0));
         
+		this.waypoints = options.waypoints;
+
 		// Start Animation Mixer
 		this.animations = {};	
         if (options.animations){
@@ -34,36 +31,34 @@ class Player{
             })
         }
 		this.raycaster = new THREE.Raycaster();
+
 	}
-	
-	setTargetDirection(point){
+
+	setTargetDirection(pt){
 		const player = this.object;
-		point.y = player.position.y;
+		pt.y = player.position.y;
 		const quaternion = player.quaternion.clone();
-		player.lookAt(point);
+		player.lookAt(pt);
 		this.quaternion = player.quaternion.clone();
 		player.quaternion.copy(quaternion);
 	}
 	
 	newPath(pt){
         const player = this.object;
+        
         if (this.pathfinder===undefined){
             this.calculatedPath = [ pt.clone() ];
             //Calculate target direction
             this.setTargetDirection( pt.clone() );
-            this.action = 'running';
+            this.action = 'run';
             return;
         }
         
-		// Calculate path to the targeted point
 		this.calculatedPath = this.pathfinder.findPath(player.position, pt, this.ZONE, this.navMeshGroup);
-
 		if (this.calculatedPath?.length) {
-			// If path is found look to the next path "checkpoint"
-			this.action = 'running';
+			this.action = 'run';
 			this.setTargetDirection( this.calculatedPath[0].clone() );
 		} else {
-			// Else, play idle animation and clamp model to closest point in the navmesh
 			this.action = 'idle';
             if (this.pathfinder){
                 const closestPlayerNode = this.pathfinder.getClosestNode(player.position, this.ZONE, this.navMeshGroup);
@@ -74,13 +69,11 @@ class Player{
                     closestPlayerNode, 
                     this.ZONE, 
                     this.navMeshGroup, 
-                    clamped
-				);
+                    clamped);
             }
 		}
 	}
 	
-	// Change animation
 	set action(name){
 		if (this.actionName == name.toLowerCase()) return;
 				
@@ -117,15 +110,15 @@ class Player{
         if (this.calculatedPath && this.calculatedPath.length) {
             const targetPosition = this.calculatedPath[0];
 
-            var vel = targetPosition.clone().sub(player.position);
+            const vel = targetPosition.clone().sub(player.position);
             // Ignore y as due to a bug the model can go underground
 			vel.y = 0;
             let pathLegComplete = (vel.lengthSq() < 0.01);
             
             if (!pathLegComplete) {
-                //Get the distance to the target before moving
+				//Get the distance to the target before moving
                 const prevDistanceSq = player.position.distanceToSquared(targetPosition);
-				vel.normalize();
+                vel.normalize();
                 // Move player to target
                 if (this.quaternion) player.quaternion.slerp(this.quaternion, 0.1);
                 player.position.add(vel.multiplyScalar(dt * speed));
@@ -143,23 +136,34 @@ class Player{
 						player.position.y = intersectsUp[0].point.y;
 				}
 
-                // Get distance to target after moving if greater then this leg is completed
+				// Get distance to target after moving if greater then this leg is completed
                 const newDistanceSq = player.position.distanceToSquared(targetPosition);
                 pathLegComplete = newDistanceSq > prevDistanceSq; 
             } 
             
             if (pathLegComplete){
-                // Remove node from path 
+                // Remove node from the path we calculated
                 this.calculatedPath.shift();
-                if (this.calculatedPath.length == 0){
-                    player.position.copy( targetPosition );
-					this.action = 'idle';
+                if (this.calculatedPath.length==0){
+                    if (this.waypoints !== undefined){
+                        this.newPath(this.randomWaypoint);
+                    }else{
+                        player.position.copy( targetPosition );
+                        this.action = 'idle';
+                    }
                 }else{
                     this.setTargetDirection( this.calculatedPath[0].clone() );
                 }
             }
+        }else{
+            if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
         }
     }
+
+	get randomWaypoint(){
+		const index = Math.floor(Math.random()*this.waypoints.length);
+		return this.waypoints[index];
+	}
 }
 
-export { Player };
+export { NPC };

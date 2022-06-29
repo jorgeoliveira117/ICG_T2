@@ -77,7 +77,7 @@ class PlayerHandler{
 
 			const options = {
 				object,
-				speed: 2.5,
+				speed: 5.2,
 				animations: gltf.animations,
 				game: this.game,
 				showPath: true,
@@ -87,8 +87,9 @@ class PlayerHandler{
 			const player = new Player(options);
 			player.action = 'idle';
 
-			player.object.position.set(1.7686685461015346, 0.022613229790458902, 1.472031437357101);
-
+			const spawnPosition = this.game.randomSpawnpoint;
+			player.object.position.copy(spawnPosition);
+			
 			this.player = player;
 
 		});
