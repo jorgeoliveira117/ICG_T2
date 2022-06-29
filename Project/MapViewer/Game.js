@@ -124,7 +124,7 @@ class Game{
 		// Load GLTF map
 		loader.load(
 			// resource path
-			'mapv5.glb',
+			'mapv6.glb',
 			gltf => {
 				this.scene.add(gltf.scene);
 				this.map = gltf.scene;
