@@ -2,7 +2,7 @@ import {
 	Vector3,
 	Plane,
 	Triangle,
-} from '../../libs/three.module.js';
+} from '../three.module.js';
 
 import { Utils } from './Utils.js';
 import { AStar } from './AStar.js';
@@ -20,6 +20,7 @@ class Pathfinding {
 	/**
 	 * (Static) Builds a zone/node set from navigation mesh geometry.
 	 * @param  {BufferGeometry} geometry
+	 * @param  {number} tolerance Vertex welding tolerance.
 	 * @return {Zone}
 	 */
 	static createZone (geometry, tolerance = 1e-4) {
@@ -106,8 +107,8 @@ class Pathfinding {
 		const nodes = this.zones[zoneID].groups[groupID];
 		const vertices = this.zones[zoneID].vertices;
 
-		const closestNode = this.getClosestNode(startPosition, zoneID, groupID, true);
-		const farthestNode = this.getClosestNode(targetPosition, zoneID, groupID, true);
+		const closestNode = this.getClosestNode(startPosition, zoneID, groupID, false);
+		const farthestNode = this.getClosestNode(targetPosition, zoneID, groupID, false);
 
 		// If we can't find any node, just go straight to the target
 		if (!closestNode || !farthestNode) {
@@ -142,9 +143,12 @@ class Pathfinding {
 		channel.push(targetPosition);
 		channel.stringPull();
 
+		//console.log(closestNode);
+		//console.log(farthestNode);
 		// Return the path, omitting first position (which is already known).
 		const path = channel.path.map((c) => new Vector3(c.x, c.y, c.z));
 		path.shift();
+		//console.log(path);
 		return path;
 	}
 }

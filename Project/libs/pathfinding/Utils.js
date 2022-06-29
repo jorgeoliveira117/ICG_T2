@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Float32BufferAttribute } from '../three.module.js';
+import { BufferAttribute, BufferGeometry } from '../three.module.js';
 
 class Utils {
 
@@ -64,53 +64,9 @@ class Utils {
     return this.distanceToSquared(a, b) < 0.00001;
   }
 
-  static prepGeometry( geometry, tolerance = 1e-4 ){
-  	tolerance = Math.max( tolerance, Number.EPSILON );
-    tolerance *= tolerance;
-    
-    // Generate an index buffer if the geometry doesn't have one, or optimize it
-    // if it's already available.
-    const indices = geometry.getIndex();
-    const positions = geometry.getAttribute( 'position' );
-    let vertexCount = (indices) ? indices.count : positions.count;
-
-    const newVertices = [];
-    const newIndices = [];
-
-    for ( let i = 0; i < vertexCount; i ++ ) {
-      const index = (indices) ? indices.getX(i) : i;	
-      const pos = { x:positions.getX(index), y:positions.getY(index), z:positions.getZ(index), index:newVertices.length};
-    
-      if (!newVertices.some( p => {
-          if (Utils.distanceToSquared(p, pos)<tolerance ){
-            newIndices.push(p.index);
-            return true;
-          }
-        })){
-        newIndices.push(pos.index);
-        newVertices.push(pos);
-      }
-    }
-
-    const vertices = [];
-    
-    newVertices.forEach( p => {
-      vertices.push(p.x);
-      vertices.push(p.y);
-      vertices.push(p.z);
-    });
-    
-    const result = new BufferGeometry();
-    
-    result.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );	
-    result.setIndex( newIndices );
-
-    return result;
-  }
-
   /**
-   * Copied from BufferGeometryUtils.mergeVertices, because importing ES modules
-   * from a sub-directory makes Node.js (as of v14) angry.
+   * Modified version of BufferGeometryUtils.mergeVertices, ignoring vertex
+   * attributes other than position.
    *
    * @param {THREE.BufferGeometry} geometry
    * @param {number} tolerance
@@ -127,92 +83,39 @@ class Utils {
     var positions = geometry.getAttribute( 'position' );
     var vertexCount = indices ? indices.count : positions.count;
 
-    // next value for triangle indices
+    // Next value for triangle indices.
     var nextIndex = 0;
 
-    // attributes and new attribute arrays
-    var attributeNames = Object.keys( geometry.attributes );
-    var attrArrays = {};
-    var morphAttrsArrays = {};
     var newIndices = [];
-    var getters = [ 'getX', 'getY', 'getZ', 'getW' ];
+    var newPositions = [];
 
-    // initialize the arrays
-    for ( var i = 0, l = attributeNames.length; i < l; i ++ ) {
-
-      var name = attributeNames[ i ];
-
-      attrArrays[ name ] = [];
-
-      var morphAttr = geometry.morphAttributes[ name ];
-      if ( morphAttr ) {
-
-        morphAttrsArrays[ name ] = new Array( morphAttr.length ).fill().map( () => [] );
-
-      }
-
-    }
-
-    // convert the error tolerance to an amount of decimal places to truncate to
+    // Convert the error tolerance to an amount of decimal places to truncate to.
     var decimalShift = Math.log10( 1 / tolerance );
     var shiftMultiplier = Math.pow( 10, decimalShift );
+
     for ( var i = 0; i < vertexCount; i ++ ) {
 
       var index = indices ? indices.getX( i ) : i;
 
-      // Generate a hash for the vertex attributes at the current index 'i'
+      // Generate a hash for the vertex attributes at the current index 'i'.
       var hash = '';
-      for ( var j = 0, l = attributeNames.length; j < l; j ++ ) {
 
-        var name = attributeNames[ j ];
-        var attribute = geometry.getAttribute( name );
-        var itemSize = attribute.itemSize;
-
-        for ( var k = 0; k < itemSize; k ++ ) {
-
-          // double tilde truncates the decimal value
-          hash += `${ ~ ~ ( attribute[ getters[ k ] ]( index ) * shiftMultiplier ) },`;
-
-        }
-
-      }
+      // Double tilde truncates the decimal value.
+      hash += `${ ~ ~ ( positions.getX( index ) * shiftMultiplier ) },`;
+      hash += `${ ~ ~ ( positions.getY( index ) * shiftMultiplier ) },`;
+      hash += `${ ~ ~ ( positions.getZ( index ) * shiftMultiplier ) },`;
 
       // Add another reference to the vertex if it's already
-      // used by another index
+      // used by another index.
       if ( hash in hashToIndex ) {
 
         newIndices.push( hashToIndex[ hash ] );
 
       } else {
 
-        // copy data to the new index in the attribute arrays
-        for ( var j = 0, l = attributeNames.length; j < l; j ++ ) {
-
-          var name = attributeNames[ j ];
-          var attribute = geometry.getAttribute( name );
-          var morphAttr = geometry.morphAttributes[ name ];
-          var itemSize = attribute.itemSize;
-          var newarray = attrArrays[ name ];
-          var newMorphArrays = morphAttrsArrays[ name ];
-
-          for ( var k = 0; k < itemSize; k ++ ) {
-
-            var getterFunc = getters[ k ];
-            newarray.push( attribute[ getterFunc ]( index ) );
-
-            if ( morphAttr ) {
-
-              for ( var m = 0, ml = morphAttr.length; m < ml; m ++ ) {
-
-                newMorphArrays[ m ].push( morphAttr[ m ][ getterFunc ]( index ) );
-
-              }
-
-            }
-
-          }
-
-        }
+        newPositions.push( positions.getX( index ) );
+        newPositions.push( positions.getY( index ) );
+        newPositions.push( positions.getZ( index ) );
 
         hashToIndex[ hash ] = nextIndex;
         newIndices.push( nextIndex );
@@ -222,38 +125,16 @@ class Utils {
 
     }
 
-    // Generate typed arrays from new attribute arrays and update
-    // the attributeBuffers
-    const result = geometry.clone();
-    for ( var i = 0, l = attributeNames.length; i < l; i ++ ) {
+    // Construct merged BufferGeometry.
 
-      var name = attributeNames[ i ];
-      var oldAttribute = geometry.getAttribute( name );
+    const positionAttribute = new BufferAttribute(
+      new Float32Array( newPositions ),
+      positions.itemSize,
+      positions.normalized
+    );
 
-      var buffer = new oldAttribute.array.constructor( attrArrays[ name ] );
-      var attribute = new BufferAttribute( buffer, oldAttribute.itemSize, oldAttribute.normalized );
-
-      result.setAttribute( name, attribute );
-
-      // Update the attribute arrays
-      if ( name in morphAttrsArrays ) {
-
-        for ( var j = 0; j < morphAttrsArrays[ name ].length; j ++ ) {
-
-          var oldMorphAttribute = geometry.morphAttributes[ name ][ j ];
-
-          var buffer = new oldMorphAttribute.array.constructor( morphAttrsArrays[ name ][ j ] );
-          var morphAttribute = new BufferAttribute( buffer, oldMorphAttribute.itemSize, oldMorphAttribute.normalized );
-          result.morphAttributes[ name ][ j ] = morphAttribute;
-
-        }
-
-      }
-
-    }
-
-    // indices
-
+    const result = new BufferGeometry();
+    result.setAttribute( 'position', positionAttribute );
     result.setIndex( newIndices );
 
     return result;

@@ -3,6 +3,8 @@ import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { RGBELoader } from '../libs/RGBELoader.js';
 import { OrbitControls } from '../libs/OrbitControls.js';
 import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
+import { NPCHandler } from './NPCHandler.js';
+import { PlayerHandler } from './PlayerHandler.js';
 
 
 class Game{
@@ -18,7 +20,7 @@ class Game{
 		this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 700 );
 		this.camera.position.set( -100, 100, -150 );
 		// Grass
-		//this.camera.position.set( -1, 1, -1 );
+		//this.camera.position.set( -1, 10, -1 );
 		// Mountain
 		//this.camera.position.set( 20, 5, 50 );
 		// Sand
@@ -70,7 +72,6 @@ class Game{
 		
 		window.addEventListener('resize', this.resize.bind(this) );
         
-		this.initMouseHandler();
 	}
 	
     resize(){
@@ -92,11 +93,18 @@ class Game{
 		this.pathfinder = new Pathfinding();
 		this.pathfinder.setZoneData('map', Pathfinding.createZone(navmesh.geometry, 0.02));
 		//if(this.npcHandler?.gltf !== undefined) this.npcHandler.initNPCs();
+		if(this.playerHandler?.gltf !== undefined) this.playerHandler.initPlayer();
 	}
     
 	load(){
         this.loadEnvironment();
+		this.playerHandler = new PlayerHandler(this);
+		//this.npcHandler = new NPCHandler(this);
     }
+
+	startRendering(){
+		this.renderer.setAnimationLoop(this.render.bind(this));
+	}
 
     loadEnvironment(){
     	const loader = new GLTFLoader( ).setPath(this.assetsPath);
@@ -104,7 +112,7 @@ class Game{
 		// Load GLTF map
 		loader.load(
 			// resource path
-			'mapv4.glb',
+			'mapv5.glb',
 			gltf => {
 				this.scene.add(gltf.scene);
 				this.map = gltf.scene;
@@ -119,7 +127,7 @@ class Game{
 							this.navmesh = child;
 							child.material.transparent = true;
 							child.material.opacity = 0.3;
-							child.material.visible = false;
+							//child.material.visible = false;
 						}
 						else{
 							child.castShadow = true;
@@ -265,36 +273,11 @@ class Game{
 		);
 	}			
     
-	// Adapted from
-	// https://threejs.org/docs/#api/en/core/Raycaster
-	initMouseHandler(){
-		const raycaster = new THREE.Raycaster();
-    	this.renderer.domElement.addEventListener( 'click', raycast, false );
-			
-    	const self = this;
-    	const mouse = { x:0, y:0 };
-    	
-    	function raycast(e){
-    		// Get pointer position in normalized device coordinates
-			mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-			mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-
-			// update the picking ray with the camera and pointer position
-			raycaster.setFromCamera( mouse, self.camera );    
-
-			// calculate intersection with navmesh
-			const intersects = raycaster.intersectObject( self.navmesh );
-			
-			if (intersects.length > 0){
-				const pt = intersects[0].point;
-				console.log(pt);
-			}	
-		}
-    }
-
 	render() {
 		const dt = this.clock.getDelta();
 
+		if(this.playerHandler !== undefined)
+			this.playerHandler.update(dt);
 		//console.log(this.camera.position)
         this.renderer.render( this.scene, this.camera );
     }

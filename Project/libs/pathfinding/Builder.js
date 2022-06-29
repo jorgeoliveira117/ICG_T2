@@ -6,9 +6,10 @@ class Builder {
   /**
    * Constructs groups from the given navigation mesh.
    * @param  {BufferGeometry} geometry
+   * @param  {number} tolerance
    * @return {Zone}
    */
-  static buildZone (geometry, tolerance = 1e-4) {
+  static buildZone (geometry, tolerance) {
 
     const navMesh = this._buildNavigationMesh(geometry, tolerance);
 
@@ -73,8 +74,30 @@ class Builder {
    * @return {Object}
    */
   static _buildNavigationMesh (geometry, tolerance) {
-    geometry = Utils.prepGeometry(geometry, tolerance);
+    geometry = Utils.mergeVertices(geometry, tolerance);
     return this._buildPolygonsFromGeometry(geometry);
+  }
+
+  /**
+   * Spreads the group ID of the given polygon to all connected polygons
+   * @param {Object} seed
+   */
+  static _spreadGroupId (seed) {
+    let nextBatch = new Set([seed]);
+
+    while(nextBatch.size > 0) {
+      const batch = nextBatch;
+      nextBatch = new Set();
+
+      batch.forEach((polygon) => {
+        polygon.group = seed.group;
+        polygon.neighbours.forEach((neighbour) => {
+          if(neighbour.group === undefined) {
+            nextBatch.add(neighbour);
+          }
+        });
+      });
+    }
   }
 
   static _buildPolygonGroups (navigationMesh) {
@@ -83,15 +106,6 @@ class Builder {
 
     const polygonGroups = [];
 
-    const spreadGroupId = function (polygon) {
-      polygon.neighbours.forEach((neighbour) => {
-        if (neighbour.group === undefined) {
-          neighbour.group = polygon.group;
-          spreadGroupId(neighbour);
-        }
-      });
-    };
-
     polygons.forEach((polygon) => {
       if (polygon.group !== undefined) {
         // this polygon is already part of a group
@@ -99,7 +113,7 @@ class Builder {
       } else {
         // we need to make a new group and spread its ID to neighbors
         polygon.group = polygonGroups.length;
-        spreadGroupId(polygon);
+        this._spreadGroupId(polygon);
         polygonGroups.push([polygon]);
       }
     });
