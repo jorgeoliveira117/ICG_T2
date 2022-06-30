@@ -59,6 +59,20 @@ class Player{
 		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
 		document.addEventListener('keydown', (e) => this.onKeyDown(e), false);
 		document.addEventListener('keyup', (e) => this.onKeyUp(e), false);
+
+		this.element = document.querySelector("#game");
+
+		// https://www.html5rocks.com/en/tutorials/pointerlock/intro/
+		this.element.requestPointerLock = this.element.requestPointerLock ||
+						this.element.mozRequestPointerLock ||
+						this.element.webkitRequestPointerLock;
+
+		// Ask the browser to release the pointer
+		document.exitPointerLock = document.exitPointerLock ||
+					document.mozExitPointerLock ||
+					document.webkitExitPointerLock;
+
+		//this.element.requestPointerLock();
 	}
 	
 	onMouseMove(e) {
@@ -76,11 +90,13 @@ class Player{
 			this.camera.rotation.x = Math.PI / 2;
 		if(this.camera.rotation.x < 0 && this.camera.rotation.x > -2.34)
 			this.camera.rotation.x = -2.34;	
+
 	}
 
 	onKeyDown(e) {
 		this.keys[e.keyCode] = true;
-	  }
+		this.element.requestPointerLock();
+	}
 	
 	onKeyUp(e) {
 		this.keys[e.keyCode] = false;
@@ -120,11 +136,26 @@ class Player{
 		const moveForward = (!!this.keys[KEYS.w] ? 1 : 0) + (!!this.keys[KEYS.s] ? -1 : 0);
 		const moveSide = (!!this.keys[KEYS.a] ? 1 : 0) + (!!this.keys[KEYS.d] ? -1 : 0);
 		
-		if(moveForward !== 0 || moveSide !== 0){
+		if(moveForward !== 0){
 			const newPosition = new THREE.Object3D();
 			newPosition.position.copy(this.model.position);
 			newPosition.rotation.copy(this.model.rotation);
 			newPosition.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
+
+			const pos = new THREE.Vector3();
+			newPosition.getWorldPosition(pos);
+			pos.y += 2;
+			this.raycaster.set(pos, this.DOWN);
+			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
+			if(intersectsDOWN.length > 0){
+				this.model.position.copy(newPosition.position);
+				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
+			}
+		}
+		if(moveSide !== 0){
+			const newPosition = new THREE.Object3D();
+			newPosition.position.copy(this.model.position);
+			newPosition.rotation.copy(this.model.rotation);
 			newPosition.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
 
 			const pos = new THREE.Vector3();

@@ -67,12 +67,14 @@ class PlayerHandler{
 		if(!gltf)
 			return;
 		const object = gltf.scene;
+		object.frustumCulled = false;
 
 		object.traverse(child=> {
 			if(child.name.includes("Rifle"))
 				object.rifle = child;
 			if(child.isMesh){
 				child.castShadow = true;
+				child.frustumCulled = false;
 			}
 		});
 
