@@ -48,9 +48,12 @@ class Player{
 		this.model.attach(this.camera);
 		this.camera.rotateY(Math.PI);
 		this.camera.position.set(0, 1.6, 0);
-		//this.game.camera.lookAt(new THREE.Vector3(0, 2, 0));
-		console.log(this.model.rotation)
-		console.log(this.camera.rotation)
+		this.headBobbingSpeed = 0.07;
+		this.headBobbingBoundMin = 1.57;
+		this.headBobbingBoundMax = 1.65;
+		this.headBobbingBound = 1.6;
+		this.moving = false;
+
 		this.keys = {};
 		this.MOVEMENT_SPEED_FORWARD = 10;
 		this.MOVEMENT_SPEED_SIDE = 7;
@@ -89,6 +92,7 @@ class Player{
 		// Change to game sensitivity
 		this.model.rotateY(-movementX * 0.005);
 		this.camera.rotateX(-movementY * 0.005);
+		this.model.neck.rotateX(-movementY * 0.005);
 		if(this.camera.rotation.x > 0 && this.camera.rotation.x < Math.PI / 2)
 			this.camera.rotation.x = Math.PI / 2;
 		if(this.camera.rotation.x < 0 && this.camera.rotation.x > -2.34)
@@ -153,6 +157,7 @@ class Player{
 			if(intersectsDOWN.length > 0){
 				this.model.position.copy(newPosition.position);
 				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
+				moved = true;
 			}
 		}
 		if(moveSide !== 0){
@@ -169,8 +174,31 @@ class Player{
 			if(intersectsDOWN.length > 0){
 				this.model.position.copy(newPosition.position);
 				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
+				moved = true;
 			}
 		}
+		if(moved){
+			this.moving = true;
+			this.action = (this.isFiring) ? 'firingmove' : 'running';
+		}else{
+			this.moving = false;
+			this.action = "idle";
+		}
+	}
+	
+	updateCamera(dt){
+		if(!this.moving)
+			return;
+		this.camera.position.y += dt * this.headBobbingSpeed;
+		if(this.camera.position.y > this.headBobbingBoundMax){
+			this.camera.position.y = this.headBobbingBoundMax;
+			this.headBobbingSpeed *= -1;
+		}
+		else if(this.camera.position.y < this.headBobbingBoundMin){
+			this.camera.position.y = this.headBobbingBoundMin;
+			this.headBobbingSpeed *= -1;
+		}
+
 	}
 
 	update(dt){
@@ -180,6 +208,7 @@ class Player{
 		if (this.mixer) this.mixer.update(dt);
 		
 		this.updateMovement(dt);
+		this.updateCamera(dt);
 		//console.log(this.camera.rotation);
     }
 }
