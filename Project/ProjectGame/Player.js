@@ -5,7 +5,8 @@ const KEYS = {
 	's': 83,
 	'w': 87,
 	'd': 68,
-  };
+	'shift': 16
+};
   
 // Sources:
 // https://threejs.org/docs/#api/en/animation/AnimationMixer
@@ -55,8 +56,9 @@ class Player{
 		this.moving = false;
 
 		this.keys = {};
-		this.MOVEMENT_SPEED_FORWARD = 10;
-		this.MOVEMENT_SPEED_SIDE = 7;
+		this.MOVEMENT_SPEED_RUN = 1.6;
+		this.MOVEMENT_SPEED_FORWARD = 8;
+		this.MOVEMENT_SPEED_SIDE = 5;
 
 		this.UP = new THREE.Vector3(0, 1, 0);
 		this.DOWN = new THREE.Vector3(0, -1, 0);
@@ -142,12 +144,13 @@ class Player{
 
 		const moveForward = (!!this.keys[KEYS.w] ? 1 : 0) + (!!this.keys[KEYS.s] ? -1 : 0);
 		const moveSide = (!!this.keys[KEYS.a] ? 1 : 0) + (!!this.keys[KEYS.d] ? -1 : 0);
-		
+		const runningSpeed = !!this.keys[KEYS.shift] ? this.MOVEMENT_SPEED_RUN : 1;
 		if(moveForward !== 0){
+			moved = true;
 			const newPosition = new THREE.Object3D();
 			newPosition.position.copy(this.model.position);
 			newPosition.rotation.copy(this.model.rotation);
-			newPosition.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
+			newPosition.translateZ(this.MOVEMENT_SPEED_FORWARD * runningSpeed * moveForward * dt);
 
 			const pos = new THREE.Vector3();
 			newPosition.getWorldPosition(pos);
@@ -161,10 +164,11 @@ class Player{
 			}
 		}
 		if(moveSide !== 0){
+			moved = true;
 			const newPosition = new THREE.Object3D();
 			newPosition.position.copy(this.model.position);
 			newPosition.rotation.copy(this.model.rotation);
-			newPosition.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
+			newPosition.translateX(this.MOVEMENT_SPEED_SIDE * runningSpeed * moveSide * dt);
 
 			const pos = new THREE.Vector3();
 			newPosition.getWorldPosition(pos);
@@ -174,7 +178,6 @@ class Player{
 			if(intersectsDOWN.length > 0){
 				this.model.position.copy(newPosition.position);
 				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
-				moved = true;
 			}
 		}
 		if(moved){
