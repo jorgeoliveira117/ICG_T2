@@ -43,11 +43,14 @@ class Player{
 		this.camera = this.game.camera;
 		this.camera.position.copy(this.model.position);
 		this.camera.rotation.copy(this.model.rotation);
+
+		
 		this.model.attach(this.camera);
 		this.camera.rotateY(Math.PI);
 		this.camera.position.set(0, 1.6, 0);
 		//this.game.camera.lookAt(new THREE.Vector3(0, 2, 0));
-
+		console.log(this.model.rotation)
+		console.log(this.camera.rotation)
 		this.keys = {};
 		this.MOVEMENT_SPEED_FORWARD = 10;
 		this.MOVEMENT_SPEED_SIDE = 7;
@@ -177,7 +180,7 @@ class Player{
 		if (this.mixer) this.mixer.update(dt);
 		
 		this.updateMovement(dt);
-		
+		//console.log(this.camera.rotation);
     }
 }
 
