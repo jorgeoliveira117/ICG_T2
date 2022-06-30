@@ -34,6 +34,11 @@ class Player{
             })
         }
 		this.raycaster = new THREE.Raycaster();
+		this.rifleDirection = new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488);
+		this.object.rifle.quaternion.copy(this.rifleDirection);
+		this.object.rifle.rotateX(1.5* Math.PI);
+		this.object.rifle.rotateZ(Math.PI);
+		this.object.rifle.position.set(-28.779, -3.731, 0.99772);
 	}
 	
 	setTargetDirection(point){

@@ -1,6 +1,22 @@
 import * as THREE from '../libs/three.module.js';
 
+const WEAPON_ROTATIONS = {
+	"death_badguy": new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488),
+	"firing": new THREE.Quaternion(-0.436, 0.496, 0.697, 0.352),
+	"idle": new THREE.Quaternion(-0.378, 0.371, 0.531, 0.662),
+	"run": new THREE.Quaternion(-0.513, 0.375, 0.590, 0.498)
+}
+
+
+const WEAPON_POSITIONS = {
+	"death_badguy": new THREE.Vector3(0,0,0),
+	"firing": new THREE.Vector3(0, 16.777, -5.63),
+	"idle": new THREE.Vector3(4.17, 23.777, 3.63),
+	"run": new THREE.Vector3(0, 23.777, 3.63)
+}
+
 class NPC{
+	
 	constructor(options){
 		this.name = options.name | "NPC"; 
 
@@ -72,7 +88,7 @@ class NPC{
                     clamped);
             }
 		}
-	}
+	} 
 	
 	set action(name){
 		if (this.actionName == name.toLowerCase()) return;
@@ -80,12 +96,18 @@ class NPC{
 		const clip = this.animations[name.toLowerCase()];
 
 		if (clip!==undefined){
-			const action = this.mixer.clipAction( clip );
-			if (name=='firing'){
-				// smoother animation repetition
-				action.clampWhenFinished = true;
-				action.setLoop( THREE.LoopOnce );
+			if (this.object.rifle){
+				this.object.rifle.quaternion.copy(WEAPON_ROTATIONS[name.toLowerCase()]);
+				this.object.rifle.rotateX(1.5* Math.PI);
+				this.object.rifle.rotateZ(Math.PI + 0.3);
+				this.object.rifle.position.copy(WEAPON_POSITIONS[name.toLowerCase()]);
 			}
+			const action = this.mixer.clipAction( clip );
+			//if (name=='firing'){
+			//	// smoother animation repetition
+			//	action.clampWhenFinished = true;
+			//	action.setLoop( THREE.LoopOnce );
+			//}
 			action.reset();
 			const nofade = this.actionName == 'firing';
 			this.actionName = name.toLowerCase();
@@ -156,7 +178,7 @@ class NPC{
                 }
             }
         }else{
-            if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
+            //if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
         }
     }
 

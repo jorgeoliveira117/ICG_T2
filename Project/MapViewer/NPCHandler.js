@@ -161,6 +161,8 @@ class NPCHandler{
 			const object = gltf.scene;
 
 			object.traverse(child=> {
+				if(child.name.includes("Rifle"))
+					object.rifle = child;
 				if(child.isMesh){
 					child.castShadow = true;
 				}
@@ -178,11 +180,11 @@ class NPCHandler{
 			};
 
 			const npc = new NPC(options);
-			npc.action = 'idle';
+			npc.action = 'firing';
 
 			npc.object.position.copy(this.game.randomSpawnpoint);
 			npc.newPath(this.randomWaypoint);
-
+			//npc.object.position.set(0,0,0);
 
 			this.npcs.push(npc);
 		});

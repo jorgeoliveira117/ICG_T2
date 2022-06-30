@@ -70,6 +70,8 @@ class PlayerHandler{
 			const object = gltf.scene;
 
 			object.traverse(child=> {
+				if(child.name.includes("Rifle"))
+					object.rifle = child;
 				if(child.isMesh){
 					child.castShadow = true;
 				}
@@ -89,7 +91,7 @@ class PlayerHandler{
 
 			const spawnPosition = this.game.randomSpawnpoint;
 			player.object.position.copy(spawnPosition);
-			
+			//player.object.position.set(0, 0, 0);
 			this.player = player;
 
 		});

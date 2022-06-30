@@ -2,6 +2,7 @@ import * as THREE from '../libs/three.module.js';
 import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { RGBELoader } from '../libs/RGBELoader.js';
 import { OrbitControls } from '../libs/OrbitControls.js';
+import { FirstPersonControls } from '../libs/FirstPersonControls.js';
 import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
 import { NPCHandler } from './NPCHandler.js';
 import { PlayerHandler } from './PlayerHandler.js';
@@ -30,9 +31,9 @@ class Game{
 		this.assetsPath = '../assets/';
         
 		this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 700 );
-		this.camera.position.set( -100, 100, -150 );
+		//this.camera.position.set( -100, 100, -150 );
 		// Grass
-		//this.camera.position.set( -1, 10, -1 );
+		this.camera.position.set( -1, 3, 2 );
 		// Mountain
 		//this.camera.position.set( 20, 5, 50 );
 		// Sand
@@ -78,8 +79,10 @@ class Game{
 		container.appendChild( this.renderer.domElement );
         //this.setEnvironment();
         
-        const controls = new OrbitControls( this.camera, this.renderer.domElement );
-        
+        //const controls = new OrbitControls( this.camera, this.renderer.domElement );
+        this.controls = new FirstPersonControls(this.camera, this.renderer.domElement);
+		this.controls.lookSpeed = 0.2;
+		this.controls.movementSpeed = 8;
         this.load();
 		
 		window.addEventListener('resize', this.resize.bind(this) );
@@ -291,7 +294,7 @@ class Game{
 
 	render() {
 		const dt = this.clock.getDelta();
-
+		this.controls.update(dt);
 		if(this.playerHandler !== undefined)
 			this.playerHandler.update(dt);
 		if(this.npcHandler !== undefined)
