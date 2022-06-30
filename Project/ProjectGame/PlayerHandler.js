@@ -35,7 +35,7 @@ class PlayerHandler{
 			if (intersects.length > 0){
 				const point = intersects[0].point;
 				console.log(point);
-				self.player.newPath(point, true);
+				//self.player.newPath(point, true);
 			}	
 		}
     }

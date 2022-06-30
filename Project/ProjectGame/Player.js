@@ -1,9 +1,17 @@
 import * as THREE from '../libs/three.module.js';
 
+const KEYS = {
+	'a': 65,
+	's': 83,
+	'w': 87,
+	'd': 68,
+  };
+  
 // Sources:
 // https://threejs.org/docs/#api/en/animation/AnimationMixer
 // https://www.youtube.com/watch?v=3CYljFpF4ds
 // https://github.com/donmccurdy/three-pathfinding
+// https://github.com/simondevyoutube/ThreeJS_Tutorial_FirstPersonCamera/blob/main/main.js
 
 class Player{
 	constructor(options){
@@ -42,54 +50,41 @@ class Player{
 		this.camera.rotateY(Math.PI);
 		this.camera.position.set(0, 1.6, 0);
 		//this.game.camera.lookAt(new THREE.Vector3(0, 2, 0));
-		this.game.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
-		
-	}
-	
-	setTargetDirection(point){
-		const player = this.object;
-		point.y = player.position.y;
-		const quaternion = player.quaternion.clone();
-		player.lookAt(point);
-		this.quaternion = player.quaternion.clone();
-		player.quaternion.copy(quaternion);
-	}
-	
-	newPath(pt){
-        const player = this.object;
-        if (this.pathfinder===undefined){
-            this.calculatedPath = [ pt.clone() ];
-            //Calculate target direction
-            this.setTargetDirection( pt.clone() );
-            this.action = 'running';
-            return;
-        }
-        
-		// Calculate path to the targeted point
-		this.calculatedPath = this.pathfinder.findPath(player.position, pt, this.ZONE, this.navMeshGroup);
 
-		if (this.calculatedPath?.length) {
-			// If path is found look to the next path "checkpoint"
-			this.action = 'running';
-			this.setTargetDirection( this.calculatedPath[0].clone() );
-		} else {
-			// Else, play idle animation and clamp model to closest point in the navmesh
-			this.action = 'idle';
-            if (this.pathfinder){
-                const closestPlayerNode = this.pathfinder.getClosestNode(player.position, this.ZONE, this.navMeshGroup);
-                const clamped = new THREE.Vector3();
-                this.pathfinder.clampStep(
-                    player.position, 
-                    pt.clone(), 
-                    closestPlayerNode, 
-                    this.ZONE, 
-                    this.navMeshGroup, 
-                    clamped
-				);
-            }
-		}
+		this.keys = {};
+		this.MOVEMENT_SPEED_FORWARD = 10;
+		this.MOVEMENT_SPEED_SIDE = 7;
+
+		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
+		document.addEventListener('keydown', (e) => this.onKeyDown(e), false);
+		document.addEventListener('keyup', (e) => this.onKeyUp(e), false);
 	}
 	
+	onMouseMove(e) {
+		e.preventDefault();
+		var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
+		var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
+		/*
+		if(gamePaused)
+			return;
+		*/
+		// Change to game sensitivity
+		this.object.rotateY(-movementX * 0.005);
+		this.camera.rotateX(-movementY * 0.005);
+		if(this.camera.rotation.x > 0 && this.camera.rotation.x < Math.PI / 2)
+			this.camera.rotation.x = Math.PI / 2;
+		if(this.camera.rotation.x < 0 && this.camera.rotation.x > -2.34)
+			this.camera.rotation.x = -2.34;	
+	}
+
+	onKeyDown(e) {
+		this.keys[e.keyCode] = true;
+	  }
+	
+	onKeyUp(e) {
+		this.keys[e.keyCode] = false;
+	}
+
 	// Change animation
 	set action(name){
 		if (this.actionName == name.toLowerCase()) return;
@@ -117,24 +112,14 @@ class Player{
 			this.currentAction = action;
 		}
 	}
-	
-	onMouseMove(e) {
-		e.preventDefault();
-		var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
-		var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
-		/*
-		if(gamePaused)
-			return;
-		*/
-		// Change to game sensitivity
-		this.object.rotateY(-movementX * 0.005);
-		this.camera.rotateX(-movementY * 0.005);
-		if(this.camera.rotation.x > 0 && this.camera.rotation.x < Math.PI / 2)
-			this.camera.rotation.x = Math.PI / 2;
-		if(this.camera.rotation.x < 0 && this.camera.rotation.x > -2.34)
-			this.camera.rotation.x = -2.34;	
-	}
 
+	updateMovement(dt){
+		const moveForward = (!!this.keys[KEYS.w] ? 1 : 0) + (!!this.keys[KEYS.s] ? -1 : 0);
+		const moveSide = (!!this.keys[KEYS.a] ? 1 : 0) + (!!this.keys[KEYS.d] ? -1 : 0);
+		
+		this.object.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
+		this.object.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
+	}
 
 	update(dt){
 		const speed = this.speed;
@@ -142,52 +127,10 @@ class Player{
 		
 		if (this.mixer) this.mixer.update(dt);
 		
-        if (this.calculatedPath && this.calculatedPath.length) {
-            const targetPosition = this.calculatedPath[0];
+		this.updateMovement(dt);
 
-            var vel = targetPosition.clone().sub(player.position);
-            // Ignore y as due to a bug the model can go underground
-			vel.y = 0;
-            let pathLegComplete = (vel.lengthSq() < 0.01);
-            
-            if (!pathLegComplete) {
-                //Get the distance to the target before moving
-                const prevDistanceSq = player.position.distanceToSquared(targetPosition);
-				vel.normalize();
-                // Move player to target
-                if (this.quaternion) player.quaternion.slerp(this.quaternion, 0.1);
-                player.position.add(vel.multiplyScalar(dt * speed));
-
-				// Solution for pathfinding bug where it goes over/underground:
-				// Check for Y position
-				this.raycaster.set(player.position, new THREE.Vector3(0,-1,0));
-				const intersectsDown= this.raycaster.intersectObject( this.game.navmesh );
-				if(intersectsDown?.length > 0){
-					player.position.y = intersectsDown[0].point.y;
-				}else{
-					this.raycaster.set(player.position, new THREE.Vector3(0,1,0));
-					const intersectsUp = this.raycaster.intersectObject( this.game.navmesh );
-					if(intersectsUp?.length > 0)
-						player.position.y = intersectsUp[0].point.y;
-				}
-
-                // Get distance to target after moving if greater then this leg is completed
-                const newDistanceSq = player.position.distanceToSquared(targetPosition);
-                pathLegComplete = newDistanceSq > prevDistanceSq; 
-            } 
-            
-            if (pathLegComplete){
-                // Remove node from path 
-                this.calculatedPath.shift();
-                if (this.calculatedPath.length == 0){
-                    player.position.copy( targetPosition );
-					this.action = 'idle';
-                }else{
-                    this.setTargetDirection( this.calculatedPath[0].clone() );
-                }
-            }
-        }
     }
+	
 }
 
 export { Player };
