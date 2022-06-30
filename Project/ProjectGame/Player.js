@@ -19,16 +19,11 @@ class Player{
 		
 		options.game.scene.add(options.object);
 		
-		this.object = options.object;
+		this.model = options.object;
 
         this.speed = options.speed;
         this.game = options.game;
         
-        if (options.game.pathfinder){
-            this.pathfinder = options.game.pathfinder;
-            this.ZONE = options.zone;
-            this.navMeshGroup = this.pathfinder.getGroup(this.ZONE, this.object.position);	
-        }
 		// Start Animation Mixer
 		this.animations = {};	
         if (options.animations){
@@ -39,14 +34,14 @@ class Player{
         }
 		this.raycaster = new THREE.Raycaster();
 		this.rifleDirection = new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488);
-		this.object.rifle.quaternion.copy(this.rifleDirection);
-		this.object.rifle.rotateX(1.5* Math.PI);
-		this.object.rifle.rotateZ(Math.PI);
-		this.object.rifle.position.set(-28.779, -3.731, 0.99772);
+		this.model.rifle.quaternion.copy(this.rifleDirection);
+		this.model.rifle.rotateX(1.5* Math.PI);
+		this.model.rifle.rotateZ(Math.PI);
+		this.model.rifle.position.set(-28.779, -3.731, 0.99772);
 		this.camera = this.game.camera;
-		this.camera.position.copy(this.object.position);
-		this.camera.rotation.copy(this.object.rotation);
-		this.object.attach(this.camera);
+		this.camera.position.copy(this.model.position);
+		this.camera.rotation.copy(this.model.rotation);
+		this.model.attach(this.camera);
 		this.camera.rotateY(Math.PI);
 		this.camera.position.set(0, 1.6, 0);
 		//this.game.camera.lookAt(new THREE.Vector3(0, 2, 0));
@@ -69,7 +64,7 @@ class Player{
 			return;
 		*/
 		// Change to game sensitivity
-		this.object.rotateY(-movementX * 0.005);
+		this.model.rotateY(-movementX * 0.005);
 		this.camera.rotateX(-movementY * 0.005);
 		if(this.camera.rotation.x > 0 && this.camera.rotation.x < Math.PI / 2)
 			this.camera.rotation.x = Math.PI / 2;
@@ -117,13 +112,13 @@ class Player{
 		const moveForward = (!!this.keys[KEYS.w] ? 1 : 0) + (!!this.keys[KEYS.s] ? -1 : 0);
 		const moveSide = (!!this.keys[KEYS.a] ? 1 : 0) + (!!this.keys[KEYS.d] ? -1 : 0);
 		
-		this.object.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
-		this.object.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
+		this.model.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
+		this.model.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
 	}
 
 	update(dt){
-		const speed = this.speed;
-		const player = this.object;
+		//const speed = this.speed;
+		//const player = this.object;
 		
 		if (this.mixer) this.mixer.update(dt);
 		

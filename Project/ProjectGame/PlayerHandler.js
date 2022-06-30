@@ -11,7 +11,6 @@ class PlayerHandler{
 		this.initMouseHandler();
 	}
 
-
 	// Adapted from
 	// https://threejs.org/docs/#api/en/core/Raycaster
 	initMouseHandler(){
@@ -45,7 +44,6 @@ class PlayerHandler{
 		const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath( '../libs/draco/' );
         loader.setDRACOLoader( dracoLoader );
-		
 		loader.load(
 			`player.glb`,
 			gltf => {
@@ -66,35 +64,32 @@ class PlayerHandler{
 	initPlayer(gltf = this.gltf){
 		const gltfs = [gltf];
 
-		gltfs.forEach(gltf => {
-			const object = gltf.scene;
+		if(!gltf)
+			return;
+		const object = gltf.scene;
 
-			object.traverse(child=> {
-				if(child.name.includes("Rifle"))
-					object.rifle = child;
-				if(child.isMesh){
-					child.castShadow = true;
-				}
-			});
-
-			const options = {
-				object,
-				speed: 5.2,
-				animations: gltf.animations,
-				game: this.game,
-				showPath: true,
-				zone: 'map',
-			};
-
-			const player = new Player(options);
-			player.action = 'idle';
-
-			const spawnPosition = this.game.randomSpawnpoint;
-			//player.object.position.copy(spawnPosition);
-			player.object.position.set(0, 0, 0);
-			this.player = player;
-
+		object.traverse(child=> {
+			if(child.name.includes("Rifle"))
+				object.rifle = child;
+			if(child.isMesh){
+				child.castShadow = true;
+			}
 		});
+
+		const options = {
+			object,
+			speed: 5.2,
+			animations: gltf.animations,
+			game: this.game,
+		};
+
+		const player = new Player(options);
+		player.action = 'idle';
+
+		const spawnPosition = this.game.randomSpawnpoint;
+		//player.object.position.copy(spawnPosition);
+		player.model.position.set(0, 0, 0);
+		this.player = player;
 
 		this.game.startRendering();
 	}
