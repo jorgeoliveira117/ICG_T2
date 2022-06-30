@@ -27,14 +27,11 @@ class Game{
         
 		this.clock = new THREE.Clock();
 
-
 		this.assetsPath = '../assets/';
         
 		this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.01, 500 );
 		this.camera.position.set( 0, 50, 0 );
 		this.camera.lookAt(new THREE.Vector3(0, 100, 0))
-		//this.camera.position.set(0, 2, -4);
-		//this.camera.lookAt(new THREE.Vector3(0, 2, 0));
 		
         
 		let backgroundColor = 0x00ABFF;

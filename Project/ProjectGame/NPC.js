@@ -148,7 +148,7 @@ class NPC{
 				// Solution for pathfinding bug where it goes over/underground:
 				// Check for Y position
 				this.raycaster.set(player.position, new THREE.Vector3(0,-1,0));
-				const intersectsDown= this.raycaster.intersectObject( this.game.navmesh );
+				const intersectsDown = this.raycaster.intersectObject( this.game.navmesh );
 				if(intersectsDown?.length > 0){
 					player.position.y = intersectsDown[0].point.y;
 				}else{

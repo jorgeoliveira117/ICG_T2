@@ -87,8 +87,8 @@ class PlayerHandler{
 		player.action = 'idle';
 
 		const spawnPosition = this.game.randomSpawnpoint;
-		//player.object.position.copy(spawnPosition);
-		player.model.position.set(0, 0, 0);
+		player.model.position.copy(spawnPosition);
+		//player.model.position.set(0, 0, 0);
 		this.player = player;
 
 		this.game.startRendering();

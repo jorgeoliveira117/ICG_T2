@@ -23,7 +23,8 @@ class Player{
 
         this.speed = options.speed;
         this.game = options.game;
-        
+        this.navmesh = this.game.navmesh;
+
 		// Start Animation Mixer
 		this.animations = {};	
         if (options.animations){
@@ -33,6 +34,7 @@ class Player{
             })
         }
 		this.raycaster = new THREE.Raycaster();
+
 		this.rifleDirection = new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488);
 		this.model.rifle.quaternion.copy(this.rifleDirection);
 		this.model.rifle.rotateX(1.5* Math.PI);
@@ -49,6 +51,10 @@ class Player{
 		this.keys = {};
 		this.MOVEMENT_SPEED_FORWARD = 10;
 		this.MOVEMENT_SPEED_SIDE = 7;
+
+		this.UP = new THREE.Vector3(0, 1, 0);
+		this.DOWN = new THREE.Vector3(0, -1, 0);
+		this.STEP_SIZE = 0.5;
 
 		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
 		document.addEventListener('keydown', (e) => this.onKeyDown(e), false);
@@ -109,23 +115,39 @@ class Player{
 	}
 
 	updateMovement(dt){
+		let moved = false;
+
 		const moveForward = (!!this.keys[KEYS.w] ? 1 : 0) + (!!this.keys[KEYS.s] ? -1 : 0);
 		const moveSide = (!!this.keys[KEYS.a] ? 1 : 0) + (!!this.keys[KEYS.d] ? -1 : 0);
 		
-		this.model.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
-		this.model.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
+		if(moveForward !== 0 || moveSide !== 0){
+			const newPosition = new THREE.Object3D();
+			newPosition.position.copy(this.model.position);
+			newPosition.rotation.copy(this.model.rotation);
+			newPosition.translateZ(this.MOVEMENT_SPEED_FORWARD * moveForward * dt);
+			newPosition.translateX(this.MOVEMENT_SPEED_SIDE * moveSide * dt);
+
+			const pos = new THREE.Vector3();
+			newPosition.getWorldPosition(pos);
+			pos.y += 2;
+			this.raycaster.set(pos, this.DOWN);
+			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
+			if(intersectsDOWN.length > 0){
+				this.model.position.copy(newPosition.position);
+				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
+			}
+		}
 	}
 
 	update(dt){
 		//const speed = this.speed;
-		//const player = this.object;
+		const player = this.model;
 		
 		if (this.mixer) this.mixer.update(dt);
 		
 		this.updateMovement(dt);
-
+		
     }
-	
 }
 
 export { Player };
