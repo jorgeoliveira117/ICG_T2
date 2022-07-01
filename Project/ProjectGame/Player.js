@@ -5,7 +5,8 @@ const KEYS = {
 	's': 83,
 	'w': 87,
 	'd': 68,
-	'shift': 16
+	'shift': 16,
+	'space': 32,
 };
   
 // Sources:
@@ -21,7 +22,6 @@ class Player{
 		options.game.scene.add(options.object);
 		
 		this.model = options.object;
-
         this.speed = options.speed;
         this.game = options.game;
         this.navmesh = this.game.navmesh;
@@ -55,14 +55,28 @@ class Player{
 		this.headBobbingBound = 1.6;
 		this.moving = false;
 
+		// Movement related properties
 		this.keys = {};
 		this.MOVEMENT_SPEED_RUN = 1.6;
 		this.MOVEMENT_SPEED_FORWARD = 8;
 		this.MOVEMENT_SPEED_SIDE = 5;
+		this.MOVEMENT_SPEED_AIRBORNE = 0.8;
+		this.GRAVITY = 9.8;
+		this.JUMP_SPEED = 4.6;
+		this.JUMP_ACELERATION = 6.5;
+		this.JUMP_HEIGHT = 2.57 / 2;
+		this.CURRENT_JUMP_SPEED = 0;
+		this.CURRENT_FALL_SPEED = 0;
+		this.TARGET_JUMP_HEIGHT = 0;
+		this.WEIGHT = 90;
+		this.isAirborne = false;
+		this.isJumping = false;
+		this.isFalling = false;
 
 		this.UP = new THREE.Vector3(0, 1, 0);
 		this.DOWN = new THREE.Vector3(0, -1, 0);
 		this.STEP_SIZE = 0.5;
+		this.GRAVITY_STEP = 0.1;
 
 		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
 		document.addEventListener('keydown', (e) => this.onKeyDown(e), false);
@@ -142,16 +156,34 @@ class Player{
 	updateMovement(dt){
 		let moved = false;
 
+		// Jump
+		if(!!this.keys[KEYS.space] && !this.isAirborne){
+			this.isJumping = true;
+			this.isAirborne = true;
+			this.CURRENT_JUMP_SPEED = this.JUMP_SPEED;
+			// Calculate jump height
+			const position = new THREE.Vector3();
+			position.copy(this.model.position);
+			position.y += 2;
+			this.raycaster.set(position, this.UP);
+			const intersects = this.raycaster.intersectObjects(this.game.scene.children);
+			if(intersects.length > 0)
+				this.TARGET_JUMP_HEIGHT = this.model.position.y + intersects[0].distance;
+			else
+				this.TARGET_JUMP_HEIGHT = this.model.position.y + this.JUMP_HEIGHT;
+		}
+
+		// Leg Movement
 		const moveForward = (!!this.keys[KEYS.w] ? 1 : 0) + (!!this.keys[KEYS.s] ? -1 : 0);
 		const moveSide = (!!this.keys[KEYS.a] ? 1 : 0) + (!!this.keys[KEYS.d] ? -1 : 0);
 		const runningSpeed = !!this.keys[KEYS.shift] ? this.MOVEMENT_SPEED_RUN : 1;
+		const airborneSpeed = this.isAirborne ? this.MOVEMENT_SPEED_AIRBORNE : 1;
 		if(moveForward !== 0){
 			moved = true;
 			const newPosition = new THREE.Object3D();
 			newPosition.position.copy(this.model.position);
 			newPosition.rotation.copy(this.model.rotation);
-			newPosition.translateZ(this.MOVEMENT_SPEED_FORWARD * runningSpeed * moveForward * dt);
-
+			newPosition.translateZ(this.MOVEMENT_SPEED_FORWARD * runningSpeed * airborneSpeed * moveForward * dt);
 			const pos = new THREE.Vector3();
 			newPosition.getWorldPosition(pos);
 			pos.y += 2;
@@ -159,7 +191,15 @@ class Player{
 			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
 			if(intersectsDOWN.length > 0){
 				this.model.position.copy(newPosition.position);
-				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
+				if(!this.isAirborne){
+					if(intersectsDOWN[0].distance > this.STEP_SIZE + 2){
+						this.isFalling = true;
+						this.isAirborne = true;
+					}
+					else
+						this.model.position.y = intersectsDOWN[0].point.y;
+				}
+					
 				moved = true;
 			}
 		}
@@ -168,8 +208,7 @@ class Player{
 			const newPosition = new THREE.Object3D();
 			newPosition.position.copy(this.model.position);
 			newPosition.rotation.copy(this.model.rotation);
-			newPosition.translateX(this.MOVEMENT_SPEED_SIDE * runningSpeed * moveSide * dt);
-
+			newPosition.translateX(this.MOVEMENT_SPEED_SIDE * runningSpeed * airborneSpeed * moveSide * dt);
 			const pos = new THREE.Vector3();
 			newPosition.getWorldPosition(pos);
 			pos.y += 2;
@@ -177,7 +216,14 @@ class Player{
 			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
 			if(intersectsDOWN.length > 0){
 				this.model.position.copy(newPosition.position);
-				this.model.position.y = (intersectsDOWN[0].point.y) + 0.1;
+				if(!this.isAirborne){
+					if(intersectsDOWN[0].distance > this.STEP_SIZE + 2){
+						this.isFalling = true;
+						this.isAirborne = true;
+					}
+					else
+						this.model.position.y = intersectsDOWN[0].point.y;
+				}
 			}
 		}
 		if(moved){
@@ -189,6 +235,44 @@ class Player{
 		}
 	}
 	
+	updateGravity(dt){
+		// Checks if model is falling under the ground, may happen due to a navmesh bug
+		if(this.model.position.y < 0){
+			this.model.position.y = 100;
+			this.raycaster.set(this.model.position, this.DOWN);
+			const intersects = this.raycaster.intersectObject(this.navmesh);
+			if(intersects.length > 0){
+				this.model.position.y = intersects[intersects.length-1].point.y;
+			}else{
+				this.model.position.copy(this.game.randomSpawnpoint);
+			}
+			this.isFalling = false;
+			this.isJumping = false;
+			this.isAirborne = false;
+		}
+		if(!this.isAirborne)
+			return;
+		if(this.isJumping){
+			this.CURRENT_JUMP_SPEED -= dt * this.JUMP_ACELERATION;
+			this.model.position.y += this.CURRENT_JUMP_SPEED * dt;
+			if(this.model.position.y  >= this.TARGET_JUMP_HEIGHT){
+				this.isJumping = false;
+				this.isFalling = true;
+				this.CURRENT_FALL_SPEED = 0;
+			}
+		}else{
+			this.CURRENT_FALL_SPEED += dt * this.GRAVITY;
+			this.model.position.y -= this.CURRENT_FALL_SPEED * dt;
+			this.raycaster.set(this.model.position, this.DOWN);
+			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
+			if(intersectsDOWN.length > 0 && intersectsDOWN[0].distance <= this.GRAVITY_STEP){
+				this.model.position.y = intersectsDOWN[0].point.y;
+				this.isFalling = false;
+				this.isAirborne = false;
+			}
+		}
+	}
+
 	updateCamera(dt){
 		if(!this.moving)
 			return;
@@ -211,6 +295,7 @@ class Player{
 		if (this.mixer) this.mixer.update(dt);
 		
 		this.updateMovement(dt);
+		this.updateGravity(dt);
 		this.updateCamera(dt);
 		//console.log(this.camera.rotation);
     }
