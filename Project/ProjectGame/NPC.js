@@ -148,15 +148,13 @@ class NPC{
 
 				// Solution for pathfinding bug where it goes over/underground:
 				// Check for Y position
-				this.raycaster.set(player.position, new THREE.Vector3(0,-1,0));
+				const pos = new THREE.Vector3();
+				player.getWorldPosition(pos);
+				pos.y += 2;
+				this.raycaster.set(pos, new THREE.Vector3(0,-1,0));
 				const intersectsDown = this.raycaster.intersectObject( this.game.navmesh );
-				if(intersectsDown?.length > 0){
+				if(intersectsDown.length > 0){
 					player.position.y = intersectsDown[0].point.y;
-				}else{
-					this.raycaster.set(player.position, new THREE.Vector3(0,1,0));
-					const intersectsUp = this.raycaster.intersectObject( this.game.navmesh );
-					if(intersectsUp?.length > 0)
-						player.position.y = intersectsUp[0].point.y;
 				}
 
 				// Get distance to target after moving if greater then this leg is completed
