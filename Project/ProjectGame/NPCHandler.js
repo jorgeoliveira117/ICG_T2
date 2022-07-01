@@ -1,7 +1,7 @@
 import {NPC} from './NPC.js';
 import {GLTFLoader} from '../libs/GLTFLoader.js';
 import {DRACOLoader} from '../libs/DRACOLoader.js';
-import {Skeleton, Raycaster, Vector3} from '../libs/three.module.js';
+import {Skeleton, Raycaster, Group, Vector3, Mesh, CapsuleGeometry, MeshBasicMaterial, SphereGeometry} from '../libs/three.module.js';
 
 const WAYPOINTS = [
 	new Vector3(-59.89253460336165, 4.801882704642674, -64.02237971170358),
@@ -157,6 +157,7 @@ class NPCHandler{
 
 		for(let i = 0; i < NPC_NUMBER; i++) gltfs.push(this.cloneGLTF(gltf));
 
+		let i = 1;
 		gltfs.forEach(gltf => {
 			const object = gltf.scene;
 
@@ -169,6 +170,29 @@ class NPCHandler{
 				}
 			});
 
+			const material = new MeshBasicMaterial( { color: 0x55AAFF } );
+			material.visible = false;
+			const headGeometry = new SphereGeometry( 0.15, 32, 16 );
+			const head = new Mesh( headGeometry, material );
+			const head2 = new Mesh( headGeometry, material );
+			head.name = "head";
+			head2.name = "head_2";
+			const bodyGeometry = new CapsuleGeometry( 0.3, 1.1, 4, 8 );
+			const body = new Mesh( bodyGeometry, material );
+			body.name = "body";
+			const hitbox = new Group();
+			object.add(hitbox);
+			hitbox.add(head);
+			hitbox.add(head2);
+			hitbox.add(body);
+			head.position.y += 1.6;
+			head.position.z += 0.2;
+			head.position.x -= 0.08;
+			head2.position.y += 1.6;
+			head2.position.z += 0.05;
+			head2.position.x -= 0.08;
+			body.position.y += 0.8;
+
 			const options = {
 				object,
 				speed: 5,
@@ -176,8 +200,9 @@ class NPCHandler{
 				game: this.game,
 				showPath: true,
 				zone: 'map',
-				name: 'bad-guy',
-				waypoints: this.waypoints
+				id: i,
+				waypoints: this.waypoints,
+				hitbox: hitbox,
 			};
 
 			const npc = new NPC(options);
@@ -188,8 +213,11 @@ class NPCHandler{
 			//npc.object.position.set(0,0,0);
 
 			this.npcs.push(npc);
+			i++;
+
 		});
 
+		this.npcs.forEach(npc => this.game.players.push(npc));
 		this.game.startRendering();
 	}
 

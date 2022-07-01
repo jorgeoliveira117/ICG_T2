@@ -1,7 +1,7 @@
 import {Player} from './Player.js';
 import {GLTFLoader} from '../libs/GLTFLoader.js';
 import {DRACOLoader} from '../libs/DRACOLoader.js';
-import {Skeleton, Raycaster} from '../libs/three.module.js';
+import {Skeleton, Raycaster, SphereGeometry, Group, CapsuleGeometry, Mesh, RingBufferGeometry, MeshBasicMaterial, AdditiveBlending, DoubleSide} from '../libs/three.module.js';
 
 class PlayerHandler{
     constructor( game ){
@@ -88,6 +88,29 @@ class PlayerHandler{
 			}
 		});
 
+		const material = new MeshBasicMaterial( { color: 0x55AAFF } );
+		material.visible = false;
+		const headGeometry = new SphereGeometry( 0.15, 32, 16 );
+		const head = new Mesh( headGeometry, material );
+		const head2 = new Mesh( headGeometry, material );
+		head.name = "head";
+		head2.name = "head_2";
+		const bodyGeometry = new CapsuleGeometry( 0.3, 1.1, 4, 8 );
+		const body = new Mesh( bodyGeometry, material );
+		body.name = "body";
+		const hitbox = new Group();
+		object.add(hitbox);
+		hitbox.add(head);
+		hitbox.add(head2);
+		hitbox.add(body);
+		head.position.y += 1.6;
+		head.position.z += 0.2;
+		head.position.x -= 0.08;
+		head2.position.y += 1.6;
+		head2.position.z += 0.05;
+		head2.position.x -= 0.08;
+		body.position.y += 0.8;
+
 		const options = {
 			object,
 			speed: 5.2,
@@ -99,9 +122,12 @@ class PlayerHandler{
 		player.action = 'idle';
 
 		const spawnPosition = this.game.randomSpawnpoint;
-		player.model.position.copy(spawnPosition);
-		//player.model.position.set(0, 0, 0);
+		//player.model.position.copy(spawnPosition);
+		player.model.position.set(-2, 0, -4);
 		this.player = player;
+		this.game.players.push(this.player);
+
+		
 
 		this.game.startRendering();
 	}

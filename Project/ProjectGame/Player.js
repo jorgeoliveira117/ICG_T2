@@ -25,6 +25,8 @@ class Player{
         this.speed = options.speed;
         this.game = options.game;
         this.navmesh = this.game.navmesh;
+		this.hitbox = options.hitbox;
+
 
 		// Start Animation Mixer
 		this.animations = {};	
@@ -79,6 +81,8 @@ class Player{
 		this.GRAVITY_STEP = 0.1;
 
 		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
+		document.addEventListener('mousedown', (e) => this.onMouseDown(e), false);
+		document.addEventListener('mouseup', (e) => this.onMouseUp(e), false);
 		document.addEventListener('keydown', (e) => this.onKeyDown(e), false);
 		document.addEventListener('keyup', (e) => this.onKeyUp(e), false);
 
@@ -95,6 +99,7 @@ class Player{
 					document.webkitExitPointerLock;
 
 		//this.element.requestPointerLock();
+
 	}
 	
 	onMouseMove(e) {
@@ -123,6 +128,31 @@ class Player{
 	
 	onKeyUp(e) {
 		this.keys[e.keyCode] = false;
+	}
+
+	onMouseDown(e) {
+		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
+		const geometry = new THREE.SphereGeometry( 0.1, 32, 16 );
+		const material = new THREE.MeshBasicMaterial( { color: 0x55AAFF } );
+		const sphere = new THREE.Mesh( geometry, material );
+		const hitPoint = new THREE.Vector3();
+		for(let i = 0; i < this.game.players.length; i++){
+			const player = this.game.players[i].object;
+			if(player == undefined)
+				continue;
+			const hits = this.raycaster.intersectObjects(player.children);
+			if (hits.length > 0){
+				hitPoint.copy(hits[0].point);
+				break;
+			}
+		}
+		//sphere.position.copy(this.raycaster.intersectObjects(this.game.scene.children)[0].point);
+		sphere.position.copy(hitPoint);
+		this.game.scene.add(sphere);
+	}
+	
+	onMouseUp(e) {
+
 	}
 
 	// Change animation

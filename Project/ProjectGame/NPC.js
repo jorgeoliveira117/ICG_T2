@@ -18,11 +18,12 @@ const WEAPON_POSITIONS = {
 class NPC{
 	
 	constructor(options){
-		this.name = options.name | "NPC"; 
+		this.name = "NPC-" + options.id; 
 
 		options.game.scene.add(options.object);
 		
 		this.object = options.object;
+		this.hitbox = options.hitbox;
 
         this.speed = options.speed;
         this.game = options.game;

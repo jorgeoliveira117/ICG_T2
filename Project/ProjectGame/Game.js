@@ -1,8 +1,5 @@
 import * as THREE from '../libs/three.module.js';
 import { GLTFLoader } from '../libs/GLTFLoader.js';
-import { RGBELoader } from '../libs/RGBELoader.js';
-import { OrbitControls } from '../libs/OrbitControls.js';
-import { FirstPersonControls } from '../libs/FirstPersonControls.js';
 import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
 import { NPCHandler } from './NPCHandler.js';
 import { PlayerHandler } from './PlayerHandler.js';
@@ -72,8 +69,9 @@ class Game{
         
         this.load();
 		
+		this.players = [];
+
 		window.addEventListener('resize', this.resize.bind(this) );
-        
 	}
 	
     resize(){
