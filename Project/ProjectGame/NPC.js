@@ -66,6 +66,8 @@ class NPC{
 		this.RESPAWN_TIME = 10 * 1000;
 		this.nextRespawn = Date.now();
 		this.isDead = false;
+		this.kills = 0;
+		this.deaths = 0;
 
 	}
 
@@ -127,6 +129,10 @@ class NPC{
 			//	action.clampWhenFinished = true;
 			//	action.setLoop( THREE.LoopOnce );
 			//}
+			if(name.includes("death")){
+				action.clampWhenFinished = true;
+				action.setLoop(THREE.LoopOnce);
+			}
 			action.reset();
 			const nofade = this.actionName == 'firing';
 			this.actionName = name.toLowerCase();
@@ -147,10 +153,17 @@ class NPC{
 		if(this.currentHealth <= 0){
 			console.log(this.name + " died.");
 			this.isDead = true;
+			this.deaths++;
+			this.action = "death_badguy";
+			this.calculatedPath = [];
 			return true;
 		}
 		console.log(this.name + " took " + damage + ". Current HP: " + this.currentHealth);
 		return false;
+	}
+
+	respawn(){
+
 	}
 
 	update(dt){
@@ -159,6 +172,9 @@ class NPC{
 		
 		if (this.mixer) this.mixer.update(dt);
 		
+		if (this.isDead)
+			return;
+
         if (this.calculatedPath && this.calculatedPath.length) {
             const targetPosition = this.calculatedPath[0];
 
@@ -206,7 +222,7 @@ class NPC{
                 }
             }
         }else{
-            //if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
+            if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
         }
     }
 

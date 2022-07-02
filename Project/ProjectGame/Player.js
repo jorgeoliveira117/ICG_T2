@@ -295,7 +295,6 @@ class Player{
 
 	updateMovement(dt){
 		let moved = false;
-
 		// Jump
 		if(!!this.keys[KEYS.space] && !this.isAirborne){
 			this.isJumping = true;
@@ -311,7 +310,6 @@ class Player{
 				this.TARGET_JUMP_HEIGHT = this.model.position.y + intersects[0].distance;
 			else
 				this.TARGET_JUMP_HEIGHT = this.model.position.y + this.JUMP_HEIGHT;
-			console.log(this.model.position.y + " " + this.TARGET_JUMP_HEIGHT)
 		}
 
 		// Leg Movement
