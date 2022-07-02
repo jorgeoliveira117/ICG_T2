@@ -209,6 +209,7 @@ class Player{
 		const hitPoint = new THREE.Vector3();
 		var foundHit = false;
 		var playerHit = null;
+		var headShot = false;
 		for(let i = 0; i < this.game.players.length; i++){
 			const player = this.game.players[i].object;
 			if(player == undefined)
@@ -218,6 +219,8 @@ class Player{
 				hitPoint.copy(hits[0].point);
 				foundHit = true;
 				playerHit = this.game.players[i];
+				headShot = hits[0].object.name.includes("head");
+				console.log(headShot);
 				break;
 			}
 		}
@@ -240,6 +243,7 @@ class Player{
 		bullet.rotateX(Math.PI/2);
 		bullet.targetPoint = hitPoint;
 		bullet.playerHit = playerHit;
+		bullet.headShot = headShot;
 		this.game.scene.add(bullet);
 		this.bullets.push(bullet);
 		
@@ -255,7 +259,8 @@ class Player{
 			if(movement >= bullet.position.distanceToSquared(bullet.targetPoint)){
 				// Check if it's hitting a player or the map
 				if(bullet.playerHit && !bullet.playerHit.isDead){
-					if(bullet.playerHit.takeDamage(this.WEAPON_DAMAGE))
+					const damage = bullet.headShot ? this.WEAPON_HEAD_MODIFIER * this.WEAPON_DAMAGE : this.WEAPON_DAMAGE;
+					if(bullet.playerHit.takeDamage(damage))
 						this.kills++;
 				}else{
 					const impactMaterial = new THREE.MeshBasicMaterial( { color: 0x111111 } );

@@ -63,12 +63,11 @@ class NPC{
 		this.MAX_HEALTH = 100;
 		this.WEAPON_DAMAGE = 35;
 		this.currentHealth = this.MAX_HEALTH;
-		this.RESPAWN_TIME = 10 * 1000;
+		this.RESPAWN_TIMER = 15 * 1000;
 		this.nextRespawn = Date.now();
 		this.isDead = false;
 		this.kills = 0;
 		this.deaths = 0;
-
 	}
 
 	setTargetDirection(pt){
@@ -156,10 +155,10 @@ class NPC{
 			this.deaths++;
 			this.action = "death_badguy";
 			this.calculatedPath = [];
-			this.nextRespawn = Date.now() + this.RESPAWN_TIME;
+			this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
 			return true;
 		}
-		console.log(this.name + " took " + damage + ". Current HP: " + this.currentHealth);
+		console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
 		return false;
 	}
 
