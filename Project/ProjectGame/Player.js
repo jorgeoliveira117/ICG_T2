@@ -91,6 +91,15 @@ class Player{
 		this.BULLET_SPEED = 80;
 		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
 		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xFF2222 });
+		this.WEAPON_DAMAGE = 35;
+		this.impacts = [];
+		this.IMPACT_FADE_SPEED = 0.25; 
+
+		// Player properties
+		this.MAX_HEALTH = 100;
+		this.currentHealth = this.MAX_HEALTH;
+		this.RESPAWN_TIME = 10 * 1000;
+		this.nextRespawn = Date.now();
 
 		// Weapon Light
 		this.light = new THREE.PointLight(0xFF5500, 0, 6);
@@ -193,6 +202,7 @@ class Player{
 		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
 		const hitPoint = new THREE.Vector3();
 		var foundHit = false;
+		var playerHit = null;
 		for(let i = 0; i < this.game.players.length; i++){
 			const player = this.game.players[i].object;
 			if(player == undefined)
@@ -201,6 +211,7 @@ class Player{
 			if (hits.length > 0){
 				hitPoint.copy(hits[0].point);
 				foundHit = true;
+				playerHit = this.game.players[i];
 				break;
 			}
 		}
@@ -216,13 +227,13 @@ class Player{
 		
 		// Create bullet tracer
 		const bullet = new THREE.Mesh(this.bulletGeometry, this.bulletMaterial);
-
 		this.model.rifle.attach(bullet);
 		bullet.position.set(0, 20, -4);
 		this.game.scene.attach(bullet);
 		bullet.lookAt(hitPoint);
 		bullet.rotateX(Math.PI/2);
 		bullet.targetPoint = hitPoint;
+		bullet.playerHit = playerHit;
 		this.game.scene.add(bullet);
 		this.bullets.push(bullet);
 		
@@ -236,11 +247,18 @@ class Player{
 		this.bullets.forEach( bullet => {
 			const movement = this.BULLET_SPEED * dt;
 			if(movement >= bullet.position.distanceToSquared(bullet.targetPoint)){
-				const geometry = new THREE.SphereGeometry( 0.1, 32, 16 );
-				const material = new THREE.MeshBasicMaterial( { color: 0x55AAFF } );
-				const sphere = new THREE.Mesh( geometry, material );
-				sphere.position.copy(bullet.targetPoint);
-				this.game.scene.add(sphere);
+				// Check if it's hitting a player or the map
+				if(bullet.playerHit){
+					console.log(bullet.playerHit);
+				}else{
+					const geometry = new THREE.SphereGeometry( 0.05, 4, 2 );
+					const material = new THREE.MeshBasicMaterial( { color: 0x111111 } );
+					material.transparent = true;
+					const sphere = new THREE.Mesh( geometry, material );
+					sphere.position.copy(bullet.targetPoint);
+					this.game.scene.add(sphere);
+					this.impacts.push(sphere);
+				}
 				bulletsToRemove.push(bullet);
 			}
 			bullet.translateY(movement);
@@ -253,6 +271,20 @@ class Player{
 		if(this.light.intensity > 0){
 			this.light.intensity -= 1 * dt;
 		}
+	}
+
+	updateImpacts(dt){
+		const impactsToRemove = [];
+		this.impacts.forEach( impact => {
+			impact.material.opacity -= this.IMPACT_FADE_SPEED * dt;
+			if(impact.material.opacity <= 0)
+				impactsToRemove.push(impact);
+		});
+		impactsToRemove.forEach( impact => {
+			const idx = this.impacts.indexOf(impact);
+			this.impacts.splice(idx, 1);
+			this.game.scene.remove(impact);
+		});
 	}
 
 	updateMovement(dt){
@@ -402,7 +434,7 @@ class Player{
 		this.updateCamera(dt);
 		this.shoot(dt);
 		this.updateBullets(dt);
-
+		this.updateImpacts(dt);
 		//console.log(this.camera.rotation);
     }
 }
