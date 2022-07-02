@@ -92,6 +92,11 @@ class Player{
 		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
 		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xFF2222 });
 
+		// Weapon Light
+		this.light = new THREE.PointLight(0xFF5500, 0, 6);
+		this.model.rifle.add(this.light);
+		this.light.position.set(-1, 0, -4);
+
 		// Listeners
 		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
 		document.addEventListener('mousedown', (e) => this.onMouseDown(e), false);
@@ -112,6 +117,8 @@ class Player{
 					document.webkitExitPointerLock;
 
 		//this.element.requestPointerLock();
+
+		
 
 	}
 	
@@ -183,7 +190,6 @@ class Player{
 		if(!this.isFiring || Date.now() < this.nextShot)
 			return;
 
-		console.log("shoot");
 		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
 		const hitPoint = new THREE.Vector3();
 		var foundHit = false;
@@ -207,13 +213,10 @@ class Player{
 		}
 		if(!foundHit)
 			return;
-		//sphere.position.copy(this.raycaster.intersectObjects(this.game.scene.children)[0].point);
 		
-		
-		
-		
+		// Create bullet tracer
 		const bullet = new THREE.Mesh(this.bulletGeometry, this.bulletMaterial);
-		
+
 		this.model.rifle.attach(bullet);
 		bullet.position.set(0, 20, -4);
 		this.game.scene.attach(bullet);
@@ -223,6 +226,8 @@ class Player{
 		this.game.scene.add(bullet);
 		this.bullets.push(bullet);
 		
+		this.light.intensity = 0.5;
+
 		this.nextShot = Date.now() + this.SHOOTING_COOLDOWN;
 	}
 
@@ -244,7 +249,10 @@ class Player{
 			const idx = this.bullets.indexOf(bullet);
 			this.bullets.splice(idx, 1);
 			this.game.scene.remove(bullet);
-		})
+		});
+		if(this.light.intensity > 0){
+			this.light.intensity -= 1 * dt;
+		}
 	}
 
 	updateMovement(dt){
