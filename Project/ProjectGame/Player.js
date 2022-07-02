@@ -36,21 +36,23 @@ class Player{
                 this.animations[animation.name.toLowerCase()] = animation;
             })
         }
-		this.raycaster = new THREE.Raycaster();
 
+		// Rifle position fix
 		this.rifleDirection = new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488);
 		this.model.rifle.quaternion.copy(this.rifleDirection);
 		this.model.rifle.rotateX(1.5* Math.PI);
 		this.model.rifle.rotateZ(Math.PI);
 		this.model.rifle.position.set(-28.779, -3.731, 0.99772);
+
+		// Camera position
 		this.camera = this.game.camera;
 		this.camera.position.copy(this.model.position);
 		this.camera.rotation.copy(this.model.rotation);
-
-		
 		this.model.attach(this.camera);
 		this.camera.rotateY(Math.PI);
 		this.camera.position.set(0, 1.6, 0);
+
+		// Camera bobbing properties
 		this.headBobbingSpeed = 0.07;
 		this.headBobbingBoundMin = 1.57;
 		this.headBobbingBoundMax = 1.65;
@@ -75,11 +77,22 @@ class Player{
 		this.isJumping = false;
 		this.isFalling = false;
 
-		this.UP = new THREE.Vector3(0, 1, 0);
-		this.DOWN = new THREE.Vector3(0, -1, 0);
+		// Raycaster properties
+		this.raycaster = new THREE.Raycaster();
 		this.STEP_SIZE = 0.5;
 		this.GRAVITY_STEP = 0.1;
+		this.UP = new THREE.Vector3(0, 1, 0);
+		this.DOWN = new THREE.Vector3(0, -1, 0);
 
+		// Shooting properties
+		this.SHOOTING_COOLDOWN = 300; // value in milliseconds
+		this.nextShot = Date().now;
+		this.bullets = [];
+		this.BULLET_SPEED = 80;
+		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
+		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xFF2222 });
+
+		// Listeners
 		document.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
 		document.addEventListener('mousedown', (e) => this.onMouseDown(e), false);
 		document.addEventListener('mouseup', (e) => this.onMouseUp(e), false);
@@ -131,28 +144,11 @@ class Player{
 	}
 
 	onMouseDown(e) {
-		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
-		const geometry = new THREE.SphereGeometry( 0.1, 32, 16 );
-		const material = new THREE.MeshBasicMaterial( { color: 0x55AAFF } );
-		const sphere = new THREE.Mesh( geometry, material );
-		const hitPoint = new THREE.Vector3();
-		for(let i = 0; i < this.game.players.length; i++){
-			const player = this.game.players[i].object;
-			if(player == undefined)
-				continue;
-			const hits = this.raycaster.intersectObjects(player.children);
-			if (hits.length > 0){
-				hitPoint.copy(hits[0].point);
-				break;
-			}
-		}
-		//sphere.position.copy(this.raycaster.intersectObjects(this.game.scene.children)[0].point);
-		sphere.position.copy(hitPoint);
-		this.game.scene.add(sphere);
+		this.isFiring = true;
 	}
 	
 	onMouseUp(e) {
-
+		this.isFiring = false;
 	}
 
 	// Change animation
@@ -163,13 +159,13 @@ class Player{
 
 		if (clip!==undefined){
 			const action = this.mixer.clipAction( clip );
-			if (name=='firing'){
+			if (name.includes('firing')){
 				// smoother animation repetition
 				action.clampWhenFinished = true;
-				action.setLoop( THREE.LoopOnce );
+				action.setLoop( THREE.LoopRepeat);
 			}
 			action.reset();
-			const nofade = this.actionName == 'firing';
+			const nofade = !this.actionName?.includes('firing');
 			this.actionName = name.toLowerCase();
 			action.play();
 			if (this.currentAction){
@@ -181,6 +177,74 @@ class Player{
 			}
 			this.currentAction = action;
 		}
+	}
+
+	shoot(dt){
+		if(!this.isFiring || Date.now() < this.nextShot)
+			return;
+
+		console.log("shoot");
+		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
+		const hitPoint = new THREE.Vector3();
+		var foundHit = false;
+		for(let i = 0; i < this.game.players.length; i++){
+			const player = this.game.players[i].object;
+			if(player == undefined)
+				continue;
+			const hits = this.raycaster.intersectObjects(player.children);
+			if (hits.length > 0){
+				hitPoint.copy(hits[0].point);
+				foundHit = true;
+				break;
+			}
+		}
+		if(!foundHit){
+			const hits = this.raycaster.intersectObjects(this.game.scene.children)
+			if (hits.length > 1){
+				hitPoint.copy(hits[1].point);
+				foundHit = true;
+			}
+		}
+		if(!foundHit)
+			return;
+		//sphere.position.copy(this.raycaster.intersectObjects(this.game.scene.children)[0].point);
+		
+		
+		
+		
+		const bullet = new THREE.Mesh(this.bulletGeometry, this.bulletMaterial);
+		
+		this.model.rifle.attach(bullet);
+		bullet.position.set(0, 20, -4);
+		this.game.scene.attach(bullet);
+		bullet.lookAt(hitPoint);
+		bullet.rotateX(Math.PI/2);
+		bullet.targetPoint = hitPoint;
+		this.game.scene.add(bullet);
+		this.bullets.push(bullet);
+		
+		this.nextShot = Date.now() + this.SHOOTING_COOLDOWN;
+	}
+
+	updateBullets(dt){
+		const bulletsToRemove = [];
+		this.bullets.forEach( bullet => {
+			const movement = this.BULLET_SPEED * dt;
+			if(movement >= bullet.position.distanceToSquared(bullet.targetPoint)){
+				const geometry = new THREE.SphereGeometry( 0.1, 32, 16 );
+				const material = new THREE.MeshBasicMaterial( { color: 0x55AAFF } );
+				const sphere = new THREE.Mesh( geometry, material );
+				sphere.position.copy(bullet.targetPoint);
+				this.game.scene.add(sphere);
+				bulletsToRemove.push(bullet);
+			}
+			bullet.translateY(movement);
+		});
+		bulletsToRemove.forEach( bullet => {
+			const idx = this.bullets.indexOf(bullet);
+			this.bullets.splice(idx, 1);
+			this.game.scene.remove(bullet);
+		})
 	}
 
 	updateMovement(dt){
@@ -256,13 +320,11 @@ class Player{
 				}
 			}
 		}
-		if(moved){
-			this.moving = true;
+		this.moving = moved;
+		if(moved)
 			this.action = (this.isFiring) ? 'firingmove' : 'running';
-		}else{
-			this.moving = false;
-			this.action = "idle";
-		}
+		else
+			this.action = (this.isFiring) ? 'firinginplace' : 'idle';
 	}
 	
 	updateGravity(dt){
@@ -293,9 +355,12 @@ class Player{
 		}else{
 			this.CURRENT_FALL_SPEED += dt * this.GRAVITY;
 			this.model.position.y -= this.CURRENT_FALL_SPEED * dt;
-			this.raycaster.set(this.model.position, this.DOWN);
+			const point = new THREE.Vector3();
+			point.copy(this.model.position);
+			point.y += 2;
+			this.raycaster.set(point, this.DOWN);
 			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
-			if(intersectsDOWN.length > 0 && intersectsDOWN[0].distance <= this.GRAVITY_STEP){
+			if(intersectsDOWN.length > 0 && intersectsDOWN[0].distance <= 2 + this.GRAVITY_STEP){
 				this.model.position.y = intersectsDOWN[0].point.y;
 				this.isFalling = false;
 				this.isAirborne = false;
@@ -327,6 +392,9 @@ class Player{
 		this.updateMovement(dt);
 		this.updateGravity(dt);
 		this.updateCamera(dt);
+		this.shoot(dt);
+		this.updateBullets(dt);
+
 		//console.log(this.camera.rotation);
     }
 }

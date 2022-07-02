@@ -131,6 +131,12 @@ class Game{
 					}
 				});
 
+				const geometry = new THREE.SphereGeometry( 100, 32, 16 );
+				const material = new THREE.MeshBasicMaterial( { color: 0x00AA00, side: THREE.DoubleSide } );
+				material.visible = false;
+				const sphere = new THREE.Mesh( geometry, material );
+				this.scene.add(sphere);
+
 				this.scene.add(this.navmesh);
 				this.initPathfinding(this.navmesh);
 
