@@ -49,6 +49,24 @@ class NPC{
         }
 		this.raycaster = new THREE.Raycaster();
 
+		// Shooting properties
+		this.SHOOTING_COOLDOWN = 300; // value in milliseconds
+		this.nextShot = Date().now;
+		this.bullets = [];
+		this.BULLET_SPEED = 80;
+		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
+		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0x22FF22 });
+		this.impacts = [];
+		this.IMPACT_FADE_SPEED = 0.25; 
+
+		// NPC properties
+		this.MAX_HEALTH = 100;
+		this.WEAPON_DAMAGE = 35;
+		this.currentHealth = this.MAX_HEALTH;
+		this.RESPAWN_TIME = 10 * 1000;
+		this.nextRespawn = Date.now();
+		this.isDead = false;
+
 	}
 
 	setTargetDirection(pt){
@@ -124,6 +142,17 @@ class NPC{
 		}
 	}
 	
+	takeDamage(damage){
+		this.currentHealth -= damage;
+		if(this.currentHealth <= 0){
+			console.log(this.name + " died.");
+			this.isDead = true;
+			return true;
+		}
+		console.log(this.name + " took " + damage + ". Current HP: " + this.currentHealth);
+		return false;
+	}
+
 	update(dt){
 		const speed = this.speed;
 		const player = this.object;

@@ -91,15 +91,21 @@ class Player{
 		this.BULLET_SPEED = 80;
 		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
 		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xFF2222 });
-		this.WEAPON_DAMAGE = 35;
 		this.impacts = [];
 		this.IMPACT_FADE_SPEED = 0.25; 
+		
+		this.impactGeometry = new THREE.SphereGeometry( 0.05, 4, 2 );
 
 		// Player properties
-		this.MAX_HEALTH = 100;
+		this.MAX_HEALTH = 200;
+		this.WEAPON_DAMAGE = 25;
+		this.WEAPON_HEAD_MODIFIER = 3;
 		this.currentHealth = this.MAX_HEALTH;
 		this.RESPAWN_TIME = 10 * 1000;
 		this.nextRespawn = Date.now();
+		this.isDead = false;
+		this.kills = 0;
+		this.deaths = 0;
 
 		// Weapon Light
 		this.light = new THREE.PointLight(0xFF5500, 0, 6);
@@ -248,13 +254,13 @@ class Player{
 			const movement = this.BULLET_SPEED * dt;
 			if(movement >= bullet.position.distanceToSquared(bullet.targetPoint)){
 				// Check if it's hitting a player or the map
-				if(bullet.playerHit){
-					console.log(bullet.playerHit);
+				if(bullet.playerHit && !bullet.playerHit.isDead){
+					if(bullet.playerHit.takeDamage(this.WEAPON_DAMAGE))
+						this.kills++;
 				}else{
-					const geometry = new THREE.SphereGeometry( 0.05, 4, 2 );
-					const material = new THREE.MeshBasicMaterial( { color: 0x111111 } );
-					material.transparent = true;
-					const sphere = new THREE.Mesh( geometry, material );
+					const impactMaterial = new THREE.MeshBasicMaterial( { color: 0x111111 } );
+					impactMaterial.transparent = true;
+					const sphere = new THREE.Mesh( this.impactGeometry, impactMaterial );
 					sphere.position.copy(bullet.targetPoint);
 					this.game.scene.add(sphere);
 					this.impacts.push(sphere);
