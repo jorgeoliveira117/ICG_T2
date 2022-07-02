@@ -156,6 +156,7 @@ class NPC{
 			this.deaths++;
 			this.action = "death_badguy";
 			this.calculatedPath = [];
+			this.nextRespawn = Date.now() + this.RESPAWN_TIME;
 			return true;
 		}
 		console.log(this.name + " took " + damage + ". Current HP: " + this.currentHealth);
@@ -163,19 +164,16 @@ class NPC{
 	}
 
 	respawn(){
-
+		this.isDead = false;
+		this.object.position.copy(this.game.randomSpawnpoint);
+		this.action = 'idle';
+		console.log(this.name + " respawned.");
 	}
 
-	update(dt){
+	updateMovement(dt){
 		const speed = this.speed;
 		const player = this.object;
-		
-		if (this.mixer) this.mixer.update(dt);
-		
-		if (this.isDead)
-			return;
-
-        if (this.calculatedPath && this.calculatedPath.length) {
+		if (this.calculatedPath && this.calculatedPath.length) {
             const targetPosition = this.calculatedPath[0];
 
             const vel = targetPosition.clone().sub(player.position);
@@ -224,6 +222,17 @@ class NPC{
         }else{
             if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
         }
+	}
+
+	update(dt){
+		if (this.mixer) this.mixer.update(dt);
+		
+		if (this.isDead){
+			if(this.nextRespawn <= Date.now())
+				this.respawn();
+			return;
+		}
+        this.updateMovement(dt);
     }
 
 	get randomWaypoint(){
