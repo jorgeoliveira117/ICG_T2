@@ -67,7 +67,7 @@ class Player{
 		this.MOVEMENT_SPEED_AIRBORNE = 0.8;
 		this.GRAVITY = 9.8;
 		this.JUMP_SPEED = 4.6;
-		this.JUMP_ACELERATION = 6.5;
+		this.JUMP_ACELERATION = 7.1;
 		this.JUMP_HEIGHT = 2.57 / 2;
 		this.CURRENT_JUMP_SPEED = 0;
 		this.CURRENT_FALL_SPEED = 0;
@@ -301,10 +301,11 @@ class Player{
 			position.y += 2;
 			this.raycaster.set(position, this.UP);
 			const intersects = this.raycaster.intersectObjects(this.game.scene.children);
-			if(intersects.length > 0)
+			if(intersects.length > 0 && intersects[0].distance < this.model.position.y + this.JUMP_HEIGHT)
 				this.TARGET_JUMP_HEIGHT = this.model.position.y + intersects[0].distance;
 			else
 				this.TARGET_JUMP_HEIGHT = this.model.position.y + this.JUMP_HEIGHT;
+			console.log(this.model.position.y + " " + this.TARGET_JUMP_HEIGHT)
 		}
 
 		// Leg Movement
@@ -384,10 +385,22 @@ class Player{
 		}
 		if(!this.isAirborne)
 			return;
+		// Check if it's still in bounds
+		const point = new THREE.Vector3();
+		point.copy(this.model.position);
+		point.y += 2;
+		this.raycaster.set(point, this.DOWN);
+		const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
+		if(intersectsDOWN.length > 0 && intersectsDOWN[0].distance <= 2 ){
+			this.model.position.y = intersectsDOWN[0].point.y;
+			this.isFalling = false;
+			this.isAirborne = false;
+		}
+		// Apply Y transformation
 		if(this.isJumping){
 			this.CURRENT_JUMP_SPEED -= dt * this.JUMP_ACELERATION;
 			this.model.position.y += this.CURRENT_JUMP_SPEED * dt;
-			if(this.model.position.y  >= this.TARGET_JUMP_HEIGHT){
+			if(this.model.position.y  >= this.TARGET_JUMP_HEIGHT || this.CURRENT_JUMP_SPEED < 0){
 				this.isJumping = false;
 				this.isFalling = true;
 				this.CURRENT_FALL_SPEED = 0;
@@ -395,17 +408,8 @@ class Player{
 		}else{
 			this.CURRENT_FALL_SPEED += dt * this.GRAVITY;
 			this.model.position.y -= this.CURRENT_FALL_SPEED * dt;
-			const point = new THREE.Vector3();
-			point.copy(this.model.position);
-			point.y += 2;
-			this.raycaster.set(point, this.DOWN);
-			const intersectsDOWN = this.raycaster.intersectObject(this.navmesh);
-			if(intersectsDOWN.length > 0 && intersectsDOWN[0].distance <= 2 + this.GRAVITY_STEP){
-				this.model.position.y = intersectsDOWN[0].point.y;
-				this.isFalling = false;
-				this.isAirborne = false;
-			}
 		}
+		
 	}
 
 	updateCamera(dt){
