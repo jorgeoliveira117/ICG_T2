@@ -11,6 +11,11 @@ class UI{
             })
         });
         "change mousewheel keyup keydown".split(" ").forEach( (e) => {
+            document.getElementById("volume").addEventListener(e, (event) => {
+                this.changeVolume(event.target.value);
+            })
+        });
+        "change mousewheel keyup keydown".split(" ").forEach( (e) => {
             document.getElementById("player-shot").addEventListener(e, (event) => {
                 this.changePlayerShotCooldown(event.target.value);
             })
@@ -24,6 +29,10 @@ class UI{
    
     changeSensitivity(value){
         this.player.sensitivity = value / 10000;
+    }
+
+    changeVolume(value){
+        console.log(value);
     }
 
     changePlayerShotCooldown(value){
@@ -53,8 +62,7 @@ class UI{
         document.getElementById("health").style.display = "block";
         this.updateEliminations();
         document.getElementById("eliminations").style.display = "block";
-        this.updateScoreboard();
-        document.getElementById("menu").style.display = "block";
+        this.showMenu();
     }
 
     loadingUpdate(){
@@ -129,11 +137,13 @@ class UI{
     showMenu(){
         this.updateScoreboard();
         document.getElementById("menu").style.display = "block";
+        document.getElementById("information").style.display = "block";
         document.exitPointerLock();
     }
 
     hideMenu(){
         document.getElementById("menu").style.display = "none";
+        document.getElementById("information").style.display = "none";
         this.player?.element?.requestPointerLock();
     }
 }

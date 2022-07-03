@@ -1,5 +1,6 @@
 body{
-    margin: 0;  
+    margin: 0; 
+    background-color: #a7f2ff; 
 } 
 
 .crosshair{
@@ -102,16 +103,32 @@ hr{
     padding-right: 10px;
 }
 
-.menu-sensitivity{
+.menu-settings{
     font-size: 0.5em;
     padding-left: 10px;
     padding-right: 10px;
     padding-top:10px
 }
 
-.menu-shooting{
-    font-size: 0.5em;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-top:10px
+
+.information{
+    position: fixed;
+    color:#002442;
+    background-color: #a7f2ff;
+    border: 2px solid black;
+    border-radius: 5px;
+    text-align: center;
+    width: 20%;
+    top: 20%;
+    left: 4%;
+}
+
+.information-title{
+    font-weight: 600;
+    font-size: 2rem;
+}
+
+.information-text{
+    font-weight: 400;
+    font-size: 0.6em;
 }

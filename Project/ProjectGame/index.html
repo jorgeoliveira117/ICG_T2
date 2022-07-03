@@ -62,9 +62,7 @@
                       </tbody>
                     </table>
                 </div>
-                <div class="menu-sensitivity row">
-                    <div class="col">
-                    </div>
+                <div class="menu-settings row">
                     <div class="col">
                         <span>Sensitivity</span>
                     </div>
@@ -72,9 +70,13 @@
                         <input type="number" min="1" max ="100" class="form-control" id="sensitivity" placeholder="Enter Sensitivity" value="50">
                     </div>
                     <div class="col">
+                        <span>Volume</span>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" min="1" max ="100" class="form-control" id="volume" placeholder="Enter Sensitivity" value="50">
                     </div>
 				</div>
-                <div class="menu-shooting row">
+                <div class="menu-settings row">
                     <div class="col">
                         <span>Player Shot Cooldown</span>
                     </div>
@@ -91,6 +93,14 @@
                 <div class="menu-button">
                     <button id="continue-game" class="btn btn-primary menu-button" type="button">Continue Game</button>
                 </div>
+            </div>
+            <div id="information" class="information" style="display: none;">
+                <span class="display-6 information-title">Controls<span>
+                <hr>
+                <p class="display-6 information-text">W/A/S/D - Move<p>
+                <p class="display-6 information-text">Space - Jump<p>
+                <p class="display-6 information-text">Shift - Run<p>
+                <p class="display-6 information-text">Mouse Buttons - Shoot<p>
             </div>
         </div>
         <script type="module">
