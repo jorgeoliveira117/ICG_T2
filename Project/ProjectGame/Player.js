@@ -174,7 +174,9 @@ class Player{
 
 	onKeyDown(e) {
 		this.keys[e.keyCode] = true;
-		this.element.requestPointerLock();
+		if(!this.game.isPaused){
+			this.element.requestPointerLock();
+		}
 		if(!this.game.isPaused && (this.keys[KEYS.p] || this.keys[KEYS.esc])){
 			this.game.isPaused = true;
 			this.ui.showMenu();
@@ -228,7 +230,7 @@ class Player{
 	shoot(dt){
 		if(!this.isFiring || Date.now() < this.nextShot)
 			return;
-
+		console.log("pew")
 		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
 		const hitPoint = new THREE.Vector3();
 		var foundHit = false;
@@ -513,8 +515,8 @@ class Player{
 	}
 
 	update(dt){
-		console.log(document.getPointerLock);
 		if(this.game.isPaused){
+			this.nextShot += dt * 1000;
 			if(this.isDead)
 				this.nextRespawn += dt * 1000;
 			return;

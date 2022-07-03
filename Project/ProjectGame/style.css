@@ -100,5 +100,18 @@ hr{
     width: 100%;
     padding-left: 10px;
     padding-right: 10px;
-    margin-top: 20px;
+}
+
+.menu-sensitivity{
+    font-size: 0.5em;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top:10px
+}
+
+.menu-shooting{
+    font-size: 0.5em;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top:10px
 }

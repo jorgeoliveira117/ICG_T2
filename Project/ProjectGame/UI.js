@@ -4,10 +4,39 @@ class UI{
     constructor(options){
         this.player = null;
         this.game = options.game;
-        console.log(options);
         document.getElementById("continue-game").onclick = () => this.continueGame();
+        "change mousewheel keyup keydown".split(" ").forEach( (e) => {
+            document.getElementById("sensitivity").addEventListener(e, (event) => {
+                this.changeSensitivity(event.target.value);
+            })
+        });
+        "change mousewheel keyup keydown".split(" ").forEach( (e) => {
+            document.getElementById("player-shot").addEventListener(e, (event) => {
+                this.changePlayerShotCooldown(event.target.value);
+            })
+        });
+        "change mousewheel keyup keydown".split(" ").forEach( (e) => {
+            document.getElementById("npc-shot").addEventListener(e, (event) => {
+                this.changeNPCShotCooldown(event.target.value);
+            })
+        });
     }
    
+    changeSensitivity(value){
+        this.player.sensitivity = value / 10000;
+    }
+
+    changePlayerShotCooldown(value){
+        this.player.SHOOTING_COOLDOWN = parseInt(value);
+    }
+
+    changeNPCShotCooldown(value){
+        this.game.players.forEach(player =>{
+            if(player.object)
+                player.SHOOTING_COOLDOWN = parseInt(value);
+        })
+    }
+
     continueGame(){
         this.game.isPaused = false;
         this.hideMenu();

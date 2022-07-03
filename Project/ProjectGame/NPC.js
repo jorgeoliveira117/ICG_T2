@@ -391,6 +391,7 @@ class NPC{
 	update(dt){
 
 		if(this.game.isPaused){
+			this.nextShot += dt * 1000;
 			if(this.isDead)
 				this.nextRespawn += dt * 1000;
 			return;
