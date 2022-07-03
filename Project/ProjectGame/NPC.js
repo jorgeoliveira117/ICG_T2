@@ -66,7 +66,7 @@ class NPC{
 
 		// NPC properties
 		this.MAX_HEALTH = 100;
-		this.WEAPON_DAMAGE = 30;
+		this.WEAPON_DAMAGE = 20 + Math.floor(Math.random()*20);;
 		this.WEAPON_HEAD_MODIFIER = 3;
 		this.currentHealth = this.MAX_HEALTH;
 		this.RESPAWN_TIMER = 15 * 1000;

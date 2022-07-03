@@ -299,6 +299,7 @@ class Player{
 		this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
 		this.model.neck.attach(this.camera);
 		this.hitbox.position.y = -100;
+		this.ui.showDeathTimer();
 	}
 	
 	respawn(){
@@ -309,6 +310,7 @@ class Player{
 		this.hitbox.position.y = 0;
 		this.setCameraPosition();
 		this.ui.updateHealth();
+		this.ui.hideDeathTimer();
 		console.log(this.name + " respawned.");
 	}
 
@@ -514,6 +516,8 @@ class Player{
 		if (this.isDead){
 			if(this.nextRespawn <= Date.now())
 				this.respawn();
+			this.ui.updateDeathTimer();
+
 			return;
 		}
 

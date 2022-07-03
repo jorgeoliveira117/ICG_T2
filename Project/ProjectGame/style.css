@@ -29,3 +29,22 @@ body{
     left: 5%;
     color:aliceblue
 }
+
+.death{
+    color:#002442;
+    background-color: #a7f2ff;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 20ch;
+    font-size: 2em;
+    text-align: center;
+    position: fixed;
+    top: calc(50% - 1em);
+    left: calc(50% - 10ch);
+}
+
+.death-text{
+    font-size: 1em;
+}

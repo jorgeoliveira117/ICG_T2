@@ -43,6 +43,18 @@ class UI{
     updateEliminations(){
         document.getElementById("eliminations-value").innerHTML = this.player?.kills;
     }
+
+    updateDeathTimer(){
+        document.getElementById("death-timer").innerHTML = ((this.player.nextRespawn - Date.now()) / 1000).toFixed(2);
+    }
+
+    showDeathTimer(){
+        document.getElementById("death").style.display = "block";
+    }
+
+    hideDeathTimer(){
+        document.getElementById("death").style.display = "none";
+    }
 }
 
 export { UI };
