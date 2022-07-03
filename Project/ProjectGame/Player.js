@@ -8,6 +8,8 @@ const KEYS = {
 	'd': 68,
 	'shift': 16,
 	'space': 32,
+	'p': 80,
+	'esc': 27,
 };
   
 // Sources:
@@ -152,7 +154,7 @@ class Player{
 
 	onMouseMove(e) {
 		e.preventDefault();
-		if(this.isDead)
+		if(this.isDead || this.game.isPaused)
 			return;
 		var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
 		var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
@@ -173,6 +175,10 @@ class Player{
 	onKeyDown(e) {
 		this.keys[e.keyCode] = true;
 		this.element.requestPointerLock();
+		if(!this.game.isPaused && (this.keys[KEYS.p] || this.keys[KEYS.esc])){
+			this.game.isPaused = true;
+			this.ui.showMenu();
+		}
 	}
 	
 	onKeyUp(e) {
@@ -507,8 +513,15 @@ class Player{
 	}
 
 	update(dt){
+		console.log(document.getPointerLock);
+		if(this.game.isPaused){
+			if(this.isDead)
+				this.nextRespawn += dt * 1000;
+			return;
+		}
+
 		if (this.mixer) this.mixer.update(dt);
-		
+
 		this.updateBullets(dt);
 		this.updateImpacts(dt);
 		this.updateGravity(dt);
@@ -517,7 +530,6 @@ class Player{
 			if(this.nextRespawn <= Date.now())
 				this.respawn();
 			this.ui.updateDeathTimer();
-
 			return;
 		}
 

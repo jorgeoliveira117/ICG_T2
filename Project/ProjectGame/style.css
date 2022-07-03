@@ -48,3 +48,57 @@ body{
 .death-text{
     font-size: 1em;
 }
+
+.menu{
+    color:#002442;
+    background-color: #a7f2ff;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    position: fixed;
+    width: 50%;
+    height: 70%;
+    top: calc(10%);
+    left: calc(25%);
+}
+
+.menu-title{
+    font-weight: 400;
+    font-size: 3em;
+}
+
+hr{
+    height: 3px;
+    background: black;
+}
+
+.scoreboard{
+    font-size: 0.5em;
+}
+
+.scoreboard-scrollbar {
+    position: relative;
+    height: 60%;
+    overflow: auto;
+}
+
+.table-wrapper-scroll-vertical {
+    display: block;
+}
+
+.table-name{
+    width: 60%;
+}
+
+.table-value{
+    width: 15%;
+}
+
+.menu-button{
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 20px;
+}

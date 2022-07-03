@@ -77,10 +77,11 @@ class Game{
 			game: this
 		});
 
-		
+		this.isPaused = true;
+
 		window.addEventListener('resize', this.resize.bind(this) );
 	}
-	
+
     resize(){
         this.camera.aspect = window.innerWidth / window.innerHeight;
     	this.camera.updateProjectionMatrix();

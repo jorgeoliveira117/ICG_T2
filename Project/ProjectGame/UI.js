@@ -5,9 +5,14 @@ class UI{
         this.player = null;
         this.game = options.game;
         console.log(options);
+        document.getElementById("continue-game").onclick = () => this.continueGame();
+    }
+   
+    continueGame(){
+        this.game.isPaused = false;
+        this.hideMenu();
     }
 
-   
     setPlayer(player) {
         this.player = player;
     }
@@ -15,10 +20,12 @@ class UI{
     loadingCompleted(){
         document.getElementById("loading").style.display = "none";
         document.getElementById("crosshair").style.display = "block";
-        document.getElementById("health").style.display = "block";
         this.updateHealth();
-        document.getElementById("eliminations").style.display = "block";
+        document.getElementById("health").style.display = "block";
         this.updateEliminations();
+        document.getElementById("eliminations").style.display = "block";
+        this.updateScoreboard();
+        document.getElementById("menu").style.display = "block";
     }
 
     loadingUpdate(){
@@ -34,6 +41,40 @@ class UI{
             document.getElementById("loading-npc").innerHTML = "NPCs Loaded";
             document.getElementById("loading-npc-spinner").style.display = "none";
         }
+    }
+
+    updateScoreboard(){
+        document.getElementById("scoreboard-body").innerHTML = "";
+        const players = [];
+
+        this.game.players.forEach(player => players.push({name: player.name, kills: player.kills, deaths: player.deaths}));
+        players.sort( (a, b) => {
+            if(a.kills > b.kills)
+                return -1;
+            if(a.kills < b.kills)
+                return 1;
+            return a.deaths <= b.deaths ? -1 : 1;
+        });
+        for(let i = 0; i < players.length; i++){
+            this.createScoreboardEntry(players[i], i + 1);
+        }
+    }
+
+    createScoreboardEntry(player, position){
+        const entry = document.createElement("tr");
+        const pos = document.createElement("th");
+        pos.innerHTML = position;
+        const name = document.createElement("td");
+        name.innerHTML = player.name;
+        const kills = document.createElement("td");
+        kills.innerHTML = player.kills;
+        const deaths = document.createElement("td");
+        deaths.innerHTML = player.deaths;
+        entry.appendChild(pos);
+        entry.appendChild(name);
+        entry.appendChild(kills);
+        entry.appendChild(deaths);
+        document.getElementById("scoreboard-body").appendChild(entry);
     }
 
     updateHealth(){
@@ -54,6 +95,17 @@ class UI{
 
     hideDeathTimer(){
         document.getElementById("death").style.display = "none";
+    }
+
+    showMenu(){
+        this.updateScoreboard();
+        document.getElementById("menu").style.display = "block";
+        document.exitPointerLock();
+    }
+
+    hideMenu(){
+        document.getElementById("menu").style.display = "none";
+        this.player?.element?.requestPointerLock();
     }
 }
 

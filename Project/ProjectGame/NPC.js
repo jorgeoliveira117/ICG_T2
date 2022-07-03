@@ -389,6 +389,13 @@ class NPC{
 	}
 
 	update(dt){
+
+		if(this.game.isPaused){
+			if(this.isDead)
+				this.nextRespawn += dt * 1000;
+			return;
+		}
+
 		if (this.mixer) this.mixer.update(dt);
 		
 		this.updateBullets(dt);

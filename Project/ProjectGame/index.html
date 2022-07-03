@@ -39,6 +39,33 @@
                 <span id="death-timer" class="display-6 death-text"></span>
                 <span class="display-6 death-text">...</span>
             </div>
+            <div id="menu" class="menu" style="display: none;">
+                <span class="display-6 menu-title">Scoreboard<span>
+                <hr>
+                <div class="table-wrapper-scroll-vertical scoreboard-scrollbar">
+                    <table class="table table-bordered table-striped mb-0 scoreboard">
+                      <thead>
+                        <tr>
+                          <th scope="col">Pos.</th>
+                          <th scope="col" class="table-name">Name</th>
+                          <th scope="col" class="table-value">Elims.</th>
+                          <th scope="col" class="table-value">Deaths</th>
+                        </tr>
+                      </thead>
+                      <tbody id="scoreboard-body">
+                        <tr>
+                          <th scope="row">1</th>
+                          <td>Player</td>
+                          <td>10</td>
+                          <td>1</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+                <div class="menu-button">
+                    <button id="continue-game" class="btn btn-primary menu-button" type="button">Continue Game</button>
+                </div>
+            </div>
         </div>
         <script type="module">
             import { Game } from "./Game.js";
