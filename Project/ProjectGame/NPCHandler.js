@@ -113,7 +113,7 @@ const WAYPOINTS = [
 	new Vector3(40.71527569411957, 0.13086691591863, -12.350799030272245)
 ];
 
-const NPC_NUMBER = 14;
+const NPC_NUMBER = 15;
 
 class NPCHandler{
     constructor( game ){
@@ -175,7 +175,7 @@ class NPCHandler{
 			});
 
 			const material = new MeshBasicMaterial( { color: 0x55AAFF } );
-			material.visible = false;
+			material.visible = true;
 			const headGeometry = new SphereGeometry( 0.15, 32, 16 );
 			const head = new Mesh( headGeometry, material );
 			const head2 = new Mesh( headGeometry, material );
@@ -192,7 +192,7 @@ class NPCHandler{
 			head.position.y += 1.6;
 			head.position.z += 0.2;
 			head.position.x -= 0.08;
-			head2.position.y += 1.6;
+			head2.position.y += 1.65;
 			head2.position.z += 0.05;
 			head2.position.x -= 0.08;
 			body.position.y += 0.8;

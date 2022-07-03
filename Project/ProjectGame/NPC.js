@@ -75,7 +75,7 @@ class NPC{
 		this.HUNT_FOV = 120;				// Angle in degrees for close detection
 		this.ALERT_FOV = 360;				// Angle in degrees for alert detection
 		this.DETECTION_INTERVAL = 1 * 1000;
-		this.nextDetection = Date.now();
+		this.nextDetection = Date.now() + this.DETECTION_INTERVAL;
 		this.currentTarget = null;			// Targeted player
 		// Types of behaviour
 		// Patrol - NPC walks to a random waypoint
@@ -219,18 +219,33 @@ class NPC{
 
 	checkForPlayers(){
 		const p = this.getNearPlayers();
+		// if alerted check if target is within hunt range
+		// if hunting check if target is closer to calculate new path
+		// verify if there's a wall between
 		if(p.behaviour == "alert"){
-			// Stop and look at player
+			// Get a random player
 			this.currentTarget = p.players[Math.floor(Math.random()*p.players.length)];
-			this.currentBehaviour = "alert";
-			this.action = "idle";
-			this.calculatedPath = [];
 			const targetPosition = this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position;
-			this.object.lookAt(targetPosition);
+			// Check if there's any mesh between the 2 players			
+			const direction = (new THREE.Vector3()).subVectors(targetPosition, this.object.position);
+			direction.normalize();
+			const currentPosition = (new THREE.Vector3()).copy(this.object.position);
+			currentPosition.y += 1.75;
+			this.raycaster.set(currentPosition, direction);
+			const intersections = this.raycaster.intersectObjects(this.game.scene.children);
+			if(intersections.length > 0 && intersections[0].distance < this.object.position.distanceTo(targetPosition)){
+				this.currentBehaviour = "hunt";
+				this.newPath(targetPosition);
+			}else{
+				// Stop and look at player
+				this.currentBehaviour = "alert";
+				this.action = "idle";
+				this.calculatedPath = [];
+				this.object.lookAt(targetPosition);
+			}
 			return;
 		}
 		if(p.behaviour == "hunt"){
-			console.log("hunting")
 			// Follow a player
 			const target = p.players[Math.floor(Math.random()*p.players.length)];
 			const targetPosition = target.name.includes("Player") ? target.model.position : target.object.position;
@@ -238,6 +253,7 @@ class NPC{
 			this.newPath(targetPosition);
 			return;
 		}
+		this.currentTarget = null;
 		this.currentBehaviour = this.generalBehaviour;
 	}
 
@@ -287,8 +303,8 @@ class NPC{
                     if (this.waypoints !== undefined){
 						if(this.currentBehaviour === "patrol")
                         	this.newPath(this.randomWaypoint);
-						//else if(this.currentBehaviour === "seek")
-						//	this.
+						else if(this.currentBehaviour === "seek")
+							this.newPath(this.randomPlayer);
                     }else{
                         player.position.copy( targetPosition );
                         this.action = 'idle';
@@ -301,8 +317,8 @@ class NPC{
             if (this.waypoints!==undefined){
 				if(this.currentBehaviour === "patrol")
 					this.newPath(this.randomWaypoint);
-				//else if(this.currentBehaviour === "seek")
-				//	this.
+				else if(this.currentBehaviour === "seek")
+					this.newPath(this.randomPlayer);
 			} 
         }
 	}
@@ -322,6 +338,10 @@ class NPC{
 		}
 		this.updateBehaviour(dt);
     }
+
+	get randomPlayer(){
+		return 1;
+	}
 
 	get randomWaypoint(){
 		const index = Math.floor(Math.random()*this.waypoints.length);
