@@ -97,6 +97,7 @@ class NPC{
 		this.sfx = new SFX(this.game.camera, `${this.game.assetsPath}sound/`, this.game.listener);
 		this.sfx.load('damaged', false, 0.35, 0.35, this.object);
 		this.sfx.load('death', false, 0.6, 0.6, this.object);
+		this.sfx.load('laser', false, 0.5, 0.5, this.object);
 	}
 
 	setTargetDirection(pt){
@@ -301,6 +302,7 @@ class NPC{
 		bullet.headShot = false;
 		this.game.scene.add(bullet);
 		this.bullets.push(bullet);
+		this.sfx.play("laser");
 	}
 
 	updateBullets(dt){

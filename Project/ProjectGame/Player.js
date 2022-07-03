@@ -146,7 +146,7 @@ class Player{
 	
 	loadSounds(){
 		this.sfx = new SFX(this.game.camera, `${this.game.assetsPath}sound/`, this.game.listener);
-		this.sfx.load('damaged', false, 0.15, 0.15, this.object);
+		this.sfx.load('damaged', false, 0.05, 0.05, this.object);
 		this.sfx.load('death', false, 0.6, 0.6, this.object);
 		this.sfx.load('hitmark', false, 0.2, 0.2, this.object);
 		this.sfx.load('laser', false, 0.18, 0.18, this.object);
