@@ -327,6 +327,7 @@ class Player{
 					const damage = bullet.headShot ? this.WEAPON_HEAD_MODIFIER * this.WEAPON_DAMAGE : this.WEAPON_DAMAGE;
 					if(bullet.playerHit.takeDamage(damage)){
 						this.kills++;
+						this.ui.updateEliminations();
 						this.heal(this.KILL_HEAL);
 					}
 				}else{

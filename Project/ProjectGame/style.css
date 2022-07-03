@@ -22,3 +22,10 @@ body{
     right: 5%;
     color:aliceblue
 }
+
+.eliminations{
+    position: fixed;
+    bottom: 5%;
+    left: 5%;
+    color:aliceblue
+}

@@ -17,6 +17,8 @@ class UI{
         document.getElementById("crosshair").style.display = "block";
         document.getElementById("health").style.display = "block";
         this.updateHealth();
+        document.getElementById("eliminations").style.display = "block";
+        this.updateEliminations();
     }
 
     loadingUpdate(){
@@ -36,6 +38,10 @@ class UI{
 
     updateHealth(){
         document.getElementById("health-value").innerHTML = this.player?.currentHealth;
+    }
+
+    updateEliminations(){
+        document.getElementById("eliminations-value").innerHTML = this.player?.kills;
     }
 }
 
