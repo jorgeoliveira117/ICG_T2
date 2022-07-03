@@ -156,6 +156,7 @@ class NPC{
 			this.action = "death_badguy";
 			this.calculatedPath = [];
 			this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
+			this.hitbox.position.y = -100;
 			return true;
 		}
 		console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
@@ -166,6 +167,7 @@ class NPC{
 		this.isDead = false;
 		this.object.position.copy(this.game.randomSpawnpoint);
 		this.action = 'idle';
+		this.hitbox.position.y = 0;
 		console.log(this.name + " respawned.");
 	}
 

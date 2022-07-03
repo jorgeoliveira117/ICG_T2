@@ -126,7 +126,7 @@ class PlayerHandler{
 		player.model.position.set(-2, 0, -4);
 		this.player = player;
 		this.game.players.push(this.player);
-
+		this.game.player = this.player;
 		
 
 		this.game.startRendering();

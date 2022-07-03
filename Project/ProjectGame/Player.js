@@ -210,9 +210,11 @@ class Player{
 		var foundHit = false;
 		var playerHit = null;
 		var headShot = false;
+
+		this.game.sortPlayers();
 		for(let i = 0; i < this.game.players.length; i++){
 			const player = this.game.players[i].object;
-			if(player == undefined)
+			if(player == undefined || this.game.players[i].isDead)
 				continue;
 			const hits = this.raycaster.intersectObjects(player.children);
 			if (hits.length > 0){
@@ -220,7 +222,6 @@ class Player{
 				foundHit = true;
 				playerHit = this.game.players[i];
 				headShot = hits[0].object.name.includes("head");
-				console.log(headShot);
 				break;
 			}
 		}

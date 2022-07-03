@@ -269,6 +269,24 @@ class Game{
 		);
 	}			
     
+	sortPlayers(){
+		if(!this.player)
+			return;
+
+		this.players.sort((a, b) => {
+			if(a.name.includes("Player"))
+				return 1;
+			if(b.name.includes("Player"))
+				return -1;
+			const distToA = this.player.model.position.distanceToSquared(a.object.position);
+			const distToB = this.player.model.position.distanceToSquared(b.object.position);
+			if(distToA <= distToB)
+				return -1;
+			return 1;
+		});
+	}
+
+
 	get randomSpawnpoint(){
 		const index = Math.floor(Math.random()*SPAWN_POINTS.length);
 		return SPAWN_POINTS[index];
