@@ -113,7 +113,7 @@ const WAYPOINTS = [
 	new Vector3(40.71527569411957, 0.13086691591863, -12.350799030272245)
 ];
 
-const NPC_NUMBER = 15;
+const NPC_NUMBER = 14;
 
 class NPCHandler{
     constructor( game ){
@@ -167,6 +167,10 @@ class NPCHandler{
 				if(child.isMesh){
 					child.castShadow = true;
 					child.frustumCulled = false;
+					if(child.name.includes("R_Bullet")){
+						child.visible = false;
+						object.bullet = child;
+					}
 				}
 			});
 

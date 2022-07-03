@@ -68,6 +68,22 @@ class NPC{
 		this.isDead = false;
 		this.kills = 0;
 		this.deaths = 0;
+
+		// Player detection properties
+		this.HUNT_DETECTION_RANGE = 24;		// Distance for when NPC will start following a player
+		this.ALERT_DETECTION_RANGE = 8;		// Distance where an NPC will look to a player
+		this.HUNT_FOV = 120;				// Angle in degrees for close detection
+		this.ALERT_FOV = 360;				// Angle in degrees for alert detection
+		this.DETECTION_INTERVAL = 1 * 1000;
+		this.nextDetection = Date.now();
+		this.currentTarget = null;			// Targeted player
+		// Types of behaviour
+		// Patrol - NPC walks to a random waypoint
+		// Seek - NPC tries to find a player
+		// Hunt - NPC follows a near player (only as a currentBehaviour)
+		// Alert - NPC shoots a near player (only as a currentBehaviour)
+		this.generalBehaviour = "patrol";
+		this.currentBehaviour = "patrol";
 	}
 
 	setTargetDirection(pt){
@@ -173,7 +189,60 @@ class NPC{
 		this.object.position.copy(this.game.randomSpawnpoint);
 		this.action = 'idle';
 		this.hitbox.position.y = 0;
+		this.currentBehaviour = this.generalBehaviour;
 		console.log(this.name + " respawned.");
+	}
+
+	getNearPlayers(){
+		players = this.game.players.filter(p => 
+			((p.object && this.object.position.distanceTo(p.object.position) < this.ALERT_DETECTION_RANGE)
+			||
+			(p.model && this.object.position.distanceTo(p.model.position) < this.ALERT_DETECTION_RANGE))
+			&& p.name !== this.name
+			&& !p.isDead
+		);
+		if(players.length > 0)
+			return {behaviour: "alert", players: players};
+
+		var players = this.game.players.filter(p => 
+			((p.object && this.object.position.distanceTo(p.object.position) < this.HUNT_DETECTION_RANGE)
+			||
+			(p.model && this.object.position.distanceTo(p.model.position) < this.HUNT_DETECTION_RANGE))
+			&& p.name !== this.name
+			&& !p.isDead
+		);
+		if(players.length > 0)
+			return {behaviour: "hunt", players: players};
+		
+		return {behaviour: "none", players: []};
+	}
+
+	checkForPlayers(){
+		const p = this.getNearPlayers();
+		if(p.behaviour == "alert"){
+			// Stop and look at player
+			this.currentTarget = p.players[Math.floor(Math.random()*p.players.length)];
+			this.currentBehaviour = "alert";
+			this.action = "idle";
+			this.calculatedPath = [];
+			const targetPosition = this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position;
+			this.object.lookAt(targetPosition);
+			return;
+		}
+		if(p.behaviour == "hunt"){
+			console.log("hunting")
+			// Follow a player
+			const target = p.players[Math.floor(Math.random()*p.players.length)];
+			const targetPosition = target.name.includes("Player") ? target.model.position : target.object.position;
+			this.currentBehaviour = "hunt";
+			this.newPath(targetPosition);
+			return;
+		}
+		this.currentBehaviour = this.generalBehaviour;
+	}
+
+	updateBehaviour(dt){
+
 	}
 
 	updateMovement(dt){
@@ -216,7 +285,10 @@ class NPC{
                 this.calculatedPath.shift();
                 if (this.calculatedPath.length==0){
                     if (this.waypoints !== undefined){
-                        this.newPath(this.randomWaypoint);
+						if(this.currentBehaviour === "patrol")
+                        	this.newPath(this.randomWaypoint);
+						//else if(this.currentBehaviour === "seek")
+						//	this.
                     }else{
                         player.position.copy( targetPosition );
                         this.action = 'idle';
@@ -226,7 +298,12 @@ class NPC{
                 }
             }
         }else{
-            if (this.waypoints!==undefined) this.newPath(this.randomWaypoint);
+            if (this.waypoints!==undefined){
+				if(this.currentBehaviour === "patrol")
+					this.newPath(this.randomWaypoint);
+				//else if(this.currentBehaviour === "seek")
+				//	this.
+			} 
         }
 	}
 
@@ -239,6 +316,11 @@ class NPC{
 			return;
 		}
         this.updateMovement(dt);
+		if(this.nextDetection <= Date.now()){
+			this.checkForPlayers();
+			this.nextDetection = Date.now() + this.DETECTION_INTERVAL;
+		}
+		this.updateBehaviour(dt);
     }
 
 	get randomWaypoint(){
