@@ -32,7 +32,9 @@ class UI{
     }
 
     changeVolume(value){
-        console.log(value);
+        const newVolume = value / 100
+        this.game.sfx?.changeVolume(newVolume);
+        this.game.players.forEach(player => player.sfx?.changeVolume(newVolume));
     }
 
     changePlayerShotCooldown(value){
@@ -135,16 +137,25 @@ class UI{
     }
 
     showMenu(){
+        
         this.updateScoreboard();
         document.getElementById("menu").style.display = "block";
         document.getElementById("information").style.display = "block";
         document.exitPointerLock();
+        if(this.game.sfx)
+		    this.game.sfx.pause("ambience");
+        else{
+            this.game.loadSounds();
+            this.changeVolume(50);
+        }
     }
 
     hideMenu(){
         document.getElementById("menu").style.display = "none";
         document.getElementById("information").style.display = "none";
         this.player?.element?.requestPointerLock();
+        if(this.game.sfx)
+		    this.game.sfx.play("ambience");
     }
 }
 

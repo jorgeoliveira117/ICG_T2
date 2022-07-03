@@ -4,6 +4,7 @@ import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
 import { NPCHandler } from './NPCHandler.js';
 import { PlayerHandler } from './PlayerHandler.js';
 import { UI } from './UI.js';
+import { SFX } from '../libs/SFX.js';
 
 
 const SPAWN_POINTS = [
@@ -69,9 +70,9 @@ class Game{
         //this.renderer.outputEncoding = THREE.sRGBEncoding;
 		container.appendChild( this.renderer.domElement );
 		
-        this.load();
-		
 		this.players = [];
+
+        this.load();
 
 		this.ui = new UI({
 			game: this
@@ -104,14 +105,15 @@ class Game{
 		this.npcHandler = new NPCHandler(this);
     }
 
-	startRendering(){
-		this.ui.loadingUpdate();
-		if(!this.playerReady || !this.npcsReady || !this.environmentReady)
-			return;
-		this.ui.loadingCompleted();
-		this.renderer.setAnimationLoop(this.render.bind(this));
+	loadSounds(){
+		// https://threejs.org/docs/#api/en/audio/Audio
+		this.listener = new THREE.AudioListener();
+		this.camera.add(this.listener);
+		this.sfx = new SFX(this.camera, `${this.assetsPath}sound/`, this.listener);
+		this.sfx.load("ambience", true, 0.1, 0.1);
+		this.players.forEach( player => player.loadSounds());
 	}
-
+	
     loadEnvironment(){
     	const loader = new GLTFLoader( ).setPath(this.assetsPath);
         
@@ -307,6 +309,15 @@ class Game{
 		return SPAWN_POINTS[index];
 	}
 
+	startRendering(){
+		this.ui.loadingUpdate();
+		if(!this.playerReady || !this.npcsReady || !this.environmentReady)
+			return;
+		this.ui.loadingCompleted();
+		this.renderer.setAnimationLoop(this.render.bind(this));
+	}
+
+
 	render() {
 		const dt = this.clock.getDelta();
 		if(this.player !== undefined)
@@ -315,6 +326,7 @@ class Game{
 			this.npcHandler.update(dt);
 		//console.log(this.camera.position)
         this.renderer.render( this.scene, this.camera );
+
     }
 }
 

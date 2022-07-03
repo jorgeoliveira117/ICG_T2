@@ -1,5 +1,6 @@
 import * as THREE from '../libs/three.module.js';
-import { UI } from './UI.js';
+import { SFX } from '../libs/SFX.js';
+
 
 const KEYS = {
 	'a': 65,
@@ -143,6 +144,14 @@ class Player{
 		this.ui.setPlayer(this);
 	}
 	
+	loadSounds(){
+		this.sfx = new SFX(this.game.camera, `${this.game.assetsPath}sound/`, this.game.listener);
+		this.sfx.load('damaged', false, 0.15, 0.15, this.object);
+		this.sfx.load('death', false, 0.6, 0.6, this.object);
+		this.sfx.load('hitmark', false, 0.2, 0.2, this.object);
+		this.sfx.load('laser', false, 0.18, 0.18, this.object);
+	}
+	
 	setCameraPosition(){
 		this.camera.position.copy(this.model.position);
 		this.camera.rotation.copy(this.model.rotation);
@@ -230,7 +239,6 @@ class Player{
 	shoot(dt){
 		if(!this.isFiring || Date.now() < this.nextShot)
 			return;
-		console.log("pew")
 		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
 		const hitPoint = new THREE.Vector3();
 		var foundHit = false;
@@ -277,6 +285,7 @@ class Player{
 		
 		this.light.intensity = 1.4;
 
+		this.sfx.play("laser");
 		this.nextShot = Date.now() + this.SHOOTING_COOLDOWN;
 	}
 
@@ -288,6 +297,7 @@ class Player{
 			this.ui.updateHealth();
 			return true;
 		}
+		this.sfx.play("damaged");
 		this.ui.updateHealth();
 		console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
 		return false;
@@ -295,6 +305,7 @@ class Player{
 
 	dead(){
 		console.log(this.name + " died.");
+		this.sfx.play("death");
 		this.isDead = true;
 		this.deaths++;
 		if(this.isAirborne 
@@ -340,6 +351,7 @@ class Player{
 						this.ui.updateEliminations();
 						this.heal(this.KILL_HEAL);
 					}
+					this.sfx.play("hitmark");
 				}else{
 					const impactMaterial = new THREE.MeshBasicMaterial( { color: 0x111111 } );
 					impactMaterial.transparent = true;

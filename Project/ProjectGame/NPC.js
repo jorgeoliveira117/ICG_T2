@@ -1,4 +1,5 @@
 import * as THREE from '../libs/three.module.js';
+import { SFX } from '../libs/SFX.js';
 
 const WEAPON_ROTATIONS = {
 	"death_badguy": new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488),
@@ -92,6 +93,12 @@ class NPC{
 		this.currentBehaviour = "patrol";
 	}
 
+	loadSounds(){
+		this.sfx = new SFX(this.game.camera, `${this.game.assetsPath}sound/`, this.game.listener);
+		this.sfx.load('damaged', false, 0.35, 0.35, this.object);
+		this.sfx.load('death', false, 0.6, 0.6, this.object);
+	}
+
 	setTargetDirection(pt){
 		const player = this.object;
 		pt.y = player.position.y;
@@ -175,12 +182,14 @@ class NPC{
 			this.dead();
 			return true;
 		}
+		this.sfx.play("damaged");
 		//console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
 		return false;
 	}
 
 	dead(){
 		//console.log(this.name + " died.");
+		this.sfx.play("death");
 		this.isDead = true;
 		this.deaths++;
 		this.action = "death_badguy";
@@ -389,7 +398,6 @@ class NPC{
 	}
 
 	update(dt){
-
 		if(this.game.isPaused){
 			this.nextShot += dt * 1000;
 			if(this.isDead)

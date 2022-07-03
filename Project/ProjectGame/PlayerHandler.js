@@ -127,7 +127,7 @@ class PlayerHandler{
 
 		const player = new Player(options);
 		player.action = 'idle';
-
+		
 		const spawnPosition = this.game.randomSpawnpoint;
 		//player.model.position.copy(spawnPosition);
 		player.model.position.set(-2, 0, -4);
