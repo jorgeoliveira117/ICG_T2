@@ -150,20 +150,25 @@ class NPC{
 	takeDamage(damage){
 		this.currentHealth -= damage;
 		if(this.currentHealth <= 0){
-			console.log(this.name + " died.");
-			this.isDead = true;
-			this.deaths++;
-			this.action = "death_badguy";
-			this.calculatedPath = [];
-			this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
-			this.hitbox.position.y = -100;
+			this.dead();
 			return true;
 		}
 		console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
 		return false;
 	}
 
+	dead(){
+		console.log(this.name + " died.");
+		this.isDead = true;
+		this.deaths++;
+		this.action = "death_badguy";
+		this.calculatedPath = [];
+		this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
+		this.hitbox.position.y = -100;
+	}
+
 	respawn(){
+		this.currentHealth = this.MAX_HEALTH;
 		this.isDead = false;
 		this.object.position.copy(this.game.randomSpawnpoint);
 		this.action = 'idle';
