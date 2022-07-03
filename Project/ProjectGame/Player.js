@@ -46,12 +46,8 @@ class Player{
 
 		// Camera position
 		this.camera = this.game.camera;
-		this.camera.position.copy(this.model.position);
-		this.camera.rotation.copy(this.model.rotation);
-		this.model.attach(this.camera);
-		this.camera.rotateY(Math.PI);
-		this.camera.position.set(0, 1.6, 0);
-
+		this.setCameraPosition();
+		
 		// Camera bobbing properties
 		this.headBobbingSpeed = 0.07;
 		this.headBobbingBoundMin = 1.57;
@@ -139,13 +135,22 @@ class Player{
 					document.webkitExitPointerLock;
 
 		//this.element.requestPointerLock();
-
-		
-
 	}
 	
+	setCameraPosition(){
+		this.camera.position.copy(this.model.position);
+		this.camera.rotation.copy(this.model.rotation);
+		console.log(this.camera.rotation);
+		this.model.attach(this.camera);
+		this.camera.rotation.set(0, 0, 0);
+		this.camera.rotateY(Math.PI);
+		this.camera.position.set(0, 1.6, 0);
+	}
+
 	onMouseMove(e) {
 		e.preventDefault();
+		if(this.isDead)
+			return;
 		var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
 		var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
 		/*
@@ -191,6 +196,10 @@ class Player{
 				// Smoother animation
 				action.clampWhenFinished = true;
 				action.setLoop( THREE.LoopRepeat);
+			}
+			if(name.includes("death")){
+				action.clampWhenFinished = true;
+				action.setLoop(THREE.LoopOnce);
 			}
 			action.reset();
 			const nofade = !this.actionName?.includes('firing');
@@ -244,7 +253,8 @@ class Player{
 		// Create bullet tracer
 		const bullet = new THREE.Mesh(this.bulletGeometry, this.bulletMaterial);
 		this.model.rifle.attach(bullet);
-		bullet.position.set(0, 20, -4);
+		//bullet.position.set(0, 70, -6);
+		bullet.position.set(-4, 65, -4);
 		this.game.scene.attach(bullet);
 		bullet.lookAt(hitPoint);
 		bullet.rotateX(Math.PI/2);
@@ -273,12 +283,15 @@ class Player{
 		console.log(this.name + " died.");
 		this.isDead = true;
 		this.deaths++;
-		this.action = 'idle';
+		if(this.isAirborne 
+			|| !!this.keys[KEYS.w] || !!this.keys[KEYS.s]
+			|| !!this.keys[KEYS.a] || !!this.keys[KEYS.d])
+			this.action = 'deathnormal';
+		else
+			this.action = 'deathstanding';
 		this.calculatedPath = [];
 		this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
-		console.log(Date.now());
-		console.log(this.RESPAWN_TIMER);
-		console.log(this.nextRespawn);
+		this.model.neck.attach(this.camera);
 		this.hitbox.position.y = -100;
 	}
 	
@@ -288,6 +301,7 @@ class Player{
 		this.model.position.copy(this.game.randomSpawnpoint);
 		this.action = 'idle';
 		this.hitbox.position.y = 0;
+		this.setCameraPosition();
 		console.log(this.name + " respawned.");
 	}
 

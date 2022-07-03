@@ -45,7 +45,7 @@ class PlayerHandler{
         dracoLoader.setDecoderPath( '../libs/draco/' );
         loader.setDRACOLoader( dracoLoader );
 		loader.load(
-			`player_headless.glb`,
+			`player_headless_anim.glb`,
 			gltf => {
 				if (this.game.pathfinder){
 					this.initPlayer(gltf);
@@ -67,6 +67,7 @@ class PlayerHandler{
 			return;
 		const object = gltf.scene;
 		object.frustumCulled = false;
+		object.materials = [];
 
 		object.traverse(child=> {
 			if(child.name.includes("Rifle"))
@@ -85,6 +86,10 @@ class PlayerHandler{
 					child.visible = false;
 					object.bullet = child;
 				}
+				object.materials.push(child.material);
+			}
+			if(child.isBone && child.name.includes("Neck")){
+				object.neck = child;
 			}
 		});
 
