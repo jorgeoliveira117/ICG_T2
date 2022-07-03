@@ -223,14 +223,11 @@ class NPC{
 		// if hunting check if target is closer to calculate new path
 		// verify if there's a wall between
 		if(p.behaviour == "alert"){
-			if(this.currentTarget){
-				if(p.players.includes(this.currentTarget))
-					console.log("nice")
-
+			// Keep hunting current target or a new one if current is gone
+			if(!this.currentTarget || !p.players.includes(this.currentTarget)){
+				// Get a random player
+				this.currentTarget = p.players[Math.floor(Math.random()*p.players.length)];
 			}
-
-			// Get a random player
-			this.currentTarget = p.players[Math.floor(Math.random()*p.players.length)];
 			const targetPosition = this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position;
 			// Check if there's any mesh between the 2 players			
 			const direction = (new THREE.Vector3()).subVectors(targetPosition, this.object.position);
@@ -239,22 +236,31 @@ class NPC{
 			currentPosition.y += 1.75;
 			this.raycaster.set(currentPosition, direction);
 			const intersections = this.raycaster.intersectObjects(this.game.scene.children);
-			if(intersections.length > 0 && intersections[0].distance < this.object.position.distanceTo(targetPosition)){
-				this.currentBehaviour = "hunt";
-				this.newPath(targetPosition);
-			}else{
-				// Stop and look at player
-				this.currentBehaviour = "alert";
-				this.action = "idle";
-				this.calculatedPath = [];
-				this.object.lookAt(targetPosition);
+			if(intersections.length > 0){
+				const distance = this.object.position.distanceTo(targetPosition);
+				for(let i = 0; i < intersections.length; i++){
+					if(intersections[i].distance < distance 
+						&& !intersections[i].object.name.includes("head")
+						&& !intersections[i].object.name.includes("body")){
+						this.currentBehaviour = "hunt";
+						this.newPath(targetPosition);
+						return;
+					}
+				}
 			}
+			// Stop and look at player
+			this.currentBehaviour = "alert";
+			this.action = "idle";
+			this.calculatedPath = [];
+			this.object.lookAt(targetPosition);
 			return;
 		}
 		if(p.behaviour == "hunt"){
-			// Follow a player
-			const target = p.players[Math.floor(Math.random()*p.players.length)];
-			const targetPosition = target.name.includes("Player") ? target.model.position : target.object.position;
+			if(!this.currentTarget || !p.players.includes(this.currentTarget)){
+				// Get a random player
+				this.currentTarget = p.players[Math.floor(Math.random()*p.players.length)];
+			}
+			const targetPosition = this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position;
 			this.currentBehaviour = "hunt";
 			this.newPath(targetPosition);
 			return;
