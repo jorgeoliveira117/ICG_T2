@@ -11,7 +11,7 @@ body{
 
 .loading{
     position: fixed;
-    right: 50%;
+    width: 100%;
     top: 50%;
     text-align: center;
 }

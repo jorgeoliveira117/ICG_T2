@@ -104,6 +104,7 @@ class Game{
     }
 
 	startRendering(){
+		this.ui.loadingUpdate();
 		if(!this.playerReady || !this.npcsReady || !this.environmentReady)
 			return;
 		this.ui.loadingCompleted();
