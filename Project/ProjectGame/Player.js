@@ -104,6 +104,7 @@ class Player{
 
 		// Player properties
 		this.MAX_HEALTH = 200;
+		this.KILL_HEAL = 60;	// Health gained after elimating an enemy
 		this.WEAPON_DAMAGE = 25;
 		this.WEAPON_HEAD_MODIFIER = 3;
 		this.currentHealth = this.MAX_HEALTH;
@@ -299,8 +300,10 @@ class Player{
 				// Check if it's hitting a player or the map
 				if(bullet.playerHit && !bullet.playerHit.isDead){
 					const damage = bullet.headShot ? this.WEAPON_HEAD_MODIFIER * this.WEAPON_DAMAGE : this.WEAPON_DAMAGE;
-					if(bullet.playerHit.takeDamage(damage))
+					if(bullet.playerHit.takeDamage(damage)){
 						this.kills++;
+						this.currentHealth = Math.min(this.currentHealth + this.KILL_HEAL, this.MAX_HEALTH) ;
+					}
 				}else{
 					const impactMaterial = new THREE.MeshBasicMaterial( { color: 0x111111 } );
 					impactMaterial.transparent = true;
