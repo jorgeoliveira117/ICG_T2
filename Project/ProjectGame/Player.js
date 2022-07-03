@@ -182,7 +182,7 @@ class Player{
 		if (clip!==undefined){
 			const action = this.mixer.clipAction( clip );
 			if (name.includes('firing')){
-				// smoother animation repetition
+				// Smoother animation
 				action.clampWhenFinished = true;
 				action.setLoop( THREE.LoopRepeat);
 			}
