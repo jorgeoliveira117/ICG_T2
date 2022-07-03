@@ -116,6 +116,7 @@ class PlayerHandler{
 			speed: 5.2,
 			animations: gltf.animations,
 			game: this.game,
+			hitbox: hitbox,
 		};
 
 		const player = new Player(options);

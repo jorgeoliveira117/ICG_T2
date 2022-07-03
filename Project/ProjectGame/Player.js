@@ -91,6 +91,12 @@ class Player{
 		this.BULLET_SPEED = 80;
 		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
 		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xFF2222 });
+		this.bulletMaterial = new THREE.MeshPhongMaterial({ 
+			color: 0xFF2222,
+			emissive: 0xFF0000,
+			specular: 0xFFFFFF,
+			shininess: 30
+		}); 
 		this.impacts = [];
 		this.IMPACT_FADE_SPEED = 0.25; 
 		
@@ -101,7 +107,7 @@ class Player{
 		this.WEAPON_DAMAGE = 25;
 		this.WEAPON_HEAD_MODIFIER = 3;
 		this.currentHealth = this.MAX_HEALTH;
-		this.RESPAWN_TIME = 10 * 1000;
+		this.RESPAWN_TIMER = 10 * 1000;
 		this.nextRespawn = Date.now();
 		this.isDead = false;
 		this.kills = 0;
@@ -153,7 +159,6 @@ class Player{
 			this.camera.rotation.x = Math.PI / 2;
 		if(this.camera.rotation.x < 0 && this.camera.rotation.x > -2.34)
 			this.camera.rotation.x = -2.34;	
-
 	}
 
 	onKeyDown(e) {
@@ -270,6 +275,9 @@ class Player{
 		this.action = 'idle';
 		this.calculatedPath = [];
 		this.nextRespawn = Date.now() + this.RESPAWN_TIMER;
+		console.log(Date.now());
+		console.log(this.RESPAWN_TIMER);
+		console.log(this.nextRespawn);
 		this.hitbox.position.y = -100;
 	}
 	
@@ -287,7 +295,7 @@ class Player{
 		const bulletsToRemove = [];
 		this.bullets.forEach( bullet => {
 			const movement = this.BULLET_SPEED * dt;
-			if(movement >= bullet.position.distanceToSquared(bullet.targetPoint)){
+			if(movement >= bullet.position.distanceTo(bullet.targetPoint)){
 				// Check if it's hitting a player or the map
 				if(bullet.playerHit && !bullet.playerHit.isDead){
 					const damage = bullet.headShot ? this.WEAPON_HEAD_MODIFIER * this.WEAPON_DAMAGE : this.WEAPON_DAMAGE;
@@ -468,17 +476,22 @@ class Player{
 	}
 
 	update(dt){
-		//const speed = this.speed;
-		const player = this.model;
-		
 		if (this.mixer) this.mixer.update(dt);
 		
+		this.updateBullets(dt);
+		this.updateImpacts(dt);
+
+		if (this.isDead){
+			if(this.nextRespawn <= Date.now())
+				this.respawn();
+			return;
+		}
+
 		this.updateMovement(dt);
 		this.updateGravity(dt);
 		this.updateCamera(dt);
 		this.shoot(dt);
-		this.updateBullets(dt);
-		this.updateImpacts(dt);
+		
 		//console.log(this.camera.rotation);
     }
 }

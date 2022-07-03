@@ -113,7 +113,7 @@ const WAYPOINTS = [
 	new Vector3(40.71527569411957, 0.13086691591863, -12.350799030272245)
 ];
 
-const NPC_NUMBER = 0;
+const NPC_NUMBER = 53;
 
 class NPCHandler{
     constructor( game ){
@@ -212,9 +212,9 @@ class NPCHandler{
 			const npc = new NPC(options);
 			npc.action = 'firing';
 
-			//npc.object.position.copy(this.game.randomSpawnpoint);
+			npc.object.position.copy(this.game.randomSpawnpoint);
 			npc.newPath(this.randomWaypoint);
-			npc.object.position.set(0,0,0);
+			//npc.object.position.set(0,0,0);
 
 			this.npcs.push(npc);
 			i++;

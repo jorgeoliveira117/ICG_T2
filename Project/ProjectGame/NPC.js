@@ -55,13 +55,19 @@ class NPC{
 		this.bullets = [];
 		this.BULLET_SPEED = 80;
 		this.bulletGeometry = new THREE.CapsuleGeometry(0.03, 1, 4, 8);
-		this.bulletMaterial = new THREE.MeshBasicMaterial({ color: 0x22FF22 });
+		this.bulletMaterial = new THREE.MeshPhongMaterial({ 
+			color: 0x00FF2B,
+			emissive: 0x00FF00,
+			specular: 0xFF0000,
+			shininess: 30
+		}); 
 		this.impacts = [];
 		this.IMPACT_FADE_SPEED = 0.25; 
 
 		// NPC properties
 		this.MAX_HEALTH = 100;
 		this.WEAPON_DAMAGE = 30;
+		this.WEAPON_HEAD_MODIFIER = 3;
 		this.currentHealth = this.MAX_HEALTH;
 		this.RESPAWN_TIMER = 15 * 1000;
 		this.nextRespawn = Date.now();
@@ -70,8 +76,8 @@ class NPC{
 		this.deaths = 0;
 
 		// Player detection properties
-		this.HUNT_DETECTION_RANGE = 24;		// Distance for when NPC will start following a player
-		this.ALERT_DETECTION_RANGE = 8;		// Distance where an NPC will look to a player
+		this.HUNT_DETECTION_RANGE = 36;		// Distance for when NPC will start following a player
+		this.ALERT_DETECTION_RANGE = 16;		// Distance where an NPC will look to a player
 		this.HUNT_FOV = 120;				// Angle in degrees for close detection
 		this.ALERT_FOV = 360;				// Angle in degrees for alert detection
 		this.DETECTION_INTERVAL = 0.4 * 1000;
@@ -268,77 +274,36 @@ class NPC{
 	}
 
 	shoot(){
-		console.log("pew");
 		this.action = "firing";
-		const targetPosition = this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position;
+		const targetPosition = new THREE.Vector3();
+		targetPosition.copy(this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position);
 		this.object.lookAt(targetPosition);
-
-		return;
-		this.raycaster.setFromCamera( new THREE.Vector2(), this.camera);
-		const hitPoint = new THREE.Vector3();
-		var foundHit = false;
-		var playerHit = null;
-		var headShot = false;
-
-		this.game.sortPlayers();
-		for(let i = 0; i < this.game.players.length; i++){
-			const player = this.game.players[i].object;
-			if(player == undefined || this.game.players[i].isDead)
-				continue;
-			const hits = this.raycaster.intersectObjects(player.children);
-			if (hits.length > 0){
-				hitPoint.copy(hits[0].point);
-				foundHit = true;
-				playerHit = this.game.players[i];
-				headShot = hits[0].object.name.includes("head");
-				break;
-			}
-		}
-		if(!foundHit){
-			const hits = this.raycaster.intersectObjects(this.game.scene.children)
-			if (hits.length > 1){
-				hitPoint.copy(hits[1].point);
-				foundHit = true;
-			}
-		}
-		if(!foundHit)
-			return;
+		targetPosition.y += 1.5;
 		
 		// Create bullet tracer
 		const bullet = new THREE.Mesh(this.bulletGeometry, this.bulletMaterial);
-		this.model.rifle.attach(bullet);
+		this.object.rifle.attach(bullet);
 		bullet.position.set(0, 20, -4);
 		this.game.scene.attach(bullet);
-		bullet.lookAt(hitPoint);
+		bullet.lookAt(targetPosition);
 		bullet.rotateX(Math.PI/2);
-		bullet.targetPoint = hitPoint;
-		bullet.playerHit = playerHit;
-		bullet.headShot = headShot;
+		bullet.targetPoint = targetPosition;
+		bullet.playerHit = this.currentTarget;
+		bullet.headShot = false;
 		this.game.scene.add(bullet);
 		this.bullets.push(bullet);
-		
-		this.light.intensity = 0.5;
-
 	}
 
 	updateBullets(dt){
-		return;
 		const bulletsToRemove = [];
 		this.bullets.forEach( bullet => {
 			const movement = this.BULLET_SPEED * dt;
-			if(movement >= bullet.position.distanceToSquared(bullet.targetPoint)){
+			if(movement >= bullet.position.distanceTo(bullet.targetPoint)){
 				// Check if it's hitting a player or the map
 				if(bullet.playerHit && !bullet.playerHit.isDead){
 					const damage = bullet.headShot ? this.WEAPON_HEAD_MODIFIER * this.WEAPON_DAMAGE : this.WEAPON_DAMAGE;
 					if(bullet.playerHit.takeDamage(damage))
 						this.kills++;
-				}else{
-					const impactMaterial = new THREE.MeshBasicMaterial( { color: 0x111111 } );
-					impactMaterial.transparent = true;
-					const sphere = new THREE.Mesh( this.impactGeometry, impactMaterial );
-					sphere.position.copy(bullet.targetPoint);
-					this.game.scene.add(sphere);
-					this.impacts.push(sphere);
 				}
 				bulletsToRemove.push(bullet);
 			}
@@ -349,9 +314,6 @@ class NPC{
 			this.bullets.splice(idx, 1);
 			this.game.scene.remove(bullet);
 		});
-		if(this.light.intensity > 0){
-			this.light.intensity -= 1 * dt;
-		}
 	}
 
 	updateBehaviour(dt){
@@ -429,6 +391,8 @@ class NPC{
 	update(dt){
 		if (this.mixer) this.mixer.update(dt);
 		
+		this.updateBullets(dt);
+
 		if (this.isDead){
 			if(this.nextRespawn <= Date.now())
 				this.respawn();
@@ -440,7 +404,6 @@ class NPC{
 			this.nextDetection = Date.now() + this.DETECTION_INTERVAL;
 		}
 		this.updateBehaviour(dt);
-		this.updateBullets(dt);
     }
 
 	get randomPlayer(){
