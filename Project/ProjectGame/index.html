@@ -11,7 +11,13 @@
 
     <body>
         <div id="game"> 
-            <img src="../assets/crosshair.png" class="crosshair">
+            <img id="crosshair" src="../assets/crosshair.png" class="crosshair"  style="display: none;">
+            <div id="loading" class="loading">
+                <div class="spinner-border text-danger" role="status" style="display: block;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
         </div>
         <script type="module">
             import { Game } from "./Game.js";

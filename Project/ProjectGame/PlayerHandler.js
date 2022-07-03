@@ -135,6 +135,7 @@ class PlayerHandler{
 		this.game.players.push(this.player);
 		this.game.player = this.player;
 
+		this.game.playerReady = true;
 		this.game.startRendering();
 	}
 

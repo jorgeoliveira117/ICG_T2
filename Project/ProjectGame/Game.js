@@ -68,7 +68,7 @@ class Game{
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
         //this.renderer.outputEncoding = THREE.sRGBEncoding;
 		container.appendChild( this.renderer.domElement );
-        
+		
         this.load();
 		
 		this.players = [];
@@ -77,6 +77,7 @@ class Game{
 			game: this
 		});
 
+		
 		window.addEventListener('resize', this.resize.bind(this) );
 	}
 	
@@ -94,12 +95,18 @@ class Game{
 	}
     
 	load(){
+		this.playerReady = false;
+		this.npcsReady = false;
+		this.environmentReady = false;
         this.loadEnvironment();
 		this.player = new PlayerHandler(this);
 		this.npcHandler = new NPCHandler(this);
     }
 
 	startRendering(){
+		if(!this.playerReady || !this.npcsReady || !this.environmentReady)
+			return;
+		this.ui.loadingCompleted();
 		this.renderer.setAnimationLoop(this.render.bind(this));
 	}
 
@@ -264,8 +271,8 @@ class Game{
 						object.material = material;
 					})
 				}
-
-				this.renderer.setAnimationLoop(this.render.bind(this));
+				this.environmentReady = true;
+				this.startRendering();
 			},
 			xhr => {
 			},

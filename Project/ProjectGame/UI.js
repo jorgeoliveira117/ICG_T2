@@ -12,7 +12,10 @@ class UI{
         this.player = player;
     }
 
-
+    loadingCompleted(){
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("crosshair").style.display = "block";
+    }
 }
 
 export { UI };

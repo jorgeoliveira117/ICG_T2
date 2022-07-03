@@ -222,6 +222,7 @@ class NPCHandler{
 		});
 
 		this.npcs.forEach(npc => this.game.players.push(npc));
+		this.game.npcsReady = true;
 		this.game.startRendering();
 	}
 

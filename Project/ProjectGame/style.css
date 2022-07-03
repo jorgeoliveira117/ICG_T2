@@ -9,11 +9,9 @@ body{
     top: calc(50% - 16px);
 }
 
-.crosshair2{
+.loading{
     position: fixed;
-    right: calc(50% - 1.5rem);
-    top: calc(50% - 1.5rem);
-    font-size: 3rem;
-    padding-bottom: 5px;
-    color: white;
+    right: 50%;
+    top: 50%;
+    text-align: center;
 }
