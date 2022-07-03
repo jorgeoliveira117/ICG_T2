@@ -15,6 +15,8 @@ class UI{
     loadingCompleted(){
         document.getElementById("loading").style.display = "none";
         document.getElementById("crosshair").style.display = "block";
+        document.getElementById("health").style.display = "block";
+        this.updateHealth();
     }
 
     loadingUpdate(){
@@ -30,6 +32,10 @@ class UI{
             document.getElementById("loading-npc").innerHTML = "NPCs Loaded";
             document.getElementById("loading-npc-spinner").style.display = "none";
         }
+    }
+
+    updateHealth(){
+        document.getElementById("health-value").innerHTML = this.player?.currentHealth;
     }
 }
 

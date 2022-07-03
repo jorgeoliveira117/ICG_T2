@@ -12,6 +12,13 @@ body{
 .loading{
     position: fixed;
     width: 100%;
-    top: 50%;
+    top: 40%;
     text-align: center;
+}
+
+.health{
+    position: fixed;
+    bottom: 5%;
+    right: 5%;
+    color:aliceblue
 }

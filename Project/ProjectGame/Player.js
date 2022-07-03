@@ -275,9 +275,12 @@ class Player{
 	takeDamage(damage){
 		this.currentHealth -= damage;
 		if(this.currentHealth <= 0){
+			this.currentHealth = 0;
 			this.dead();
+			this.ui.updateHealth();
 			return true;
 		}
+		this.ui.updateHealth();
 		console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
 		return false;
 	}
@@ -305,9 +308,14 @@ class Player{
 		this.action = 'idle';
 		this.hitbox.position.y = 0;
 		this.setCameraPosition();
+		this.ui.updateHealth();
 		console.log(this.name + " respawned.");
 	}
 
+	heal(ammount){
+		this.currentHealth = Math.min(this.currentHealth + ammount, this.MAX_HEALTH);
+		this.ui.updateHealth();
+	}
 
 	updateBullets(dt){
 		const bulletsToRemove = [];
@@ -319,7 +327,7 @@ class Player{
 					const damage = bullet.headShot ? this.WEAPON_HEAD_MODIFIER * this.WEAPON_DAMAGE : this.WEAPON_DAMAGE;
 					if(bullet.playerHit.takeDamage(damage)){
 						this.kills++;
-						this.currentHealth = Math.min(this.currentHealth + this.KILL_HEAL, this.MAX_HEALTH) ;
+						this.heal(this.KILL_HEAL);
 					}
 				}else{
 					const impactMaterial = new THREE.MeshBasicMaterial( { color: 0x111111 } );
