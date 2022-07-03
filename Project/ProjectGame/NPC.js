@@ -2,7 +2,7 @@ import * as THREE from '../libs/three.module.js';
 
 const WEAPON_ROTATIONS = {
 	"death_badguy": new THREE.Quaternion(-0.476, -0.536, 0.497, 0.488),
-	"firing": new THREE.Quaternion(0.396, -0.487, -0.67, -0.396),
+	"firing": new THREE.Quaternion(0.411, -0.642, -0.574, -0.298),
 	"idle": new THREE.Quaternion(-0.378, 0.371, 0.531, 0.662),
 	"run": new THREE.Quaternion(-0.513, 0.375, 0.590, 0.498)
 }
@@ -10,7 +10,7 @@ const WEAPON_ROTATIONS = {
 
 const WEAPON_POSITIONS = {
 	"death_badguy": new THREE.Vector3(0,0,0),
-	"firing": new THREE.Vector3(0.22, 18.586, -4.6812),
+	"firing": new THREE.Vector3(2.52, 23.52, -3.20),
 	"idle": new THREE.Vector3(4.17, 23.777, 3.63),
 	"run": new THREE.Vector3(0, 23.777, 3.63)
 }
