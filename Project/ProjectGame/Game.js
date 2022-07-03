@@ -3,6 +3,8 @@ import { GLTFLoader } from '../libs/GLTFLoader.js';
 import { Pathfinding } from '../libs/pathfinding/Pathfinding.js';
 import { NPCHandler } from './NPCHandler.js';
 import { PlayerHandler } from './PlayerHandler.js';
+import { UI } from './UI.js';
+
 
 const SPAWN_POINTS = [
 	new THREE.Vector3(-59.89253460336165, 4.801882704642674, -64.02237971170358),
@@ -70,6 +72,10 @@ class Game{
         this.load();
 		
 		this.players = [];
+
+		this.ui = new UI({
+			game: this
+		});
 
 		window.addEventListener('resize', this.resize.bind(this) );
 	}

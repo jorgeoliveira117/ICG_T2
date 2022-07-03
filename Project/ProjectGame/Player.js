@@ -1,4 +1,5 @@
 import * as THREE from '../libs/three.module.js';
+import { UI } from './UI.js';
 
 const KEYS = {
 	'a': 65,
@@ -72,6 +73,7 @@ class Player{
 		this.isAirborne = false;
 		this.isJumping = false;
 		this.isFalling = false;
+		this.sensitivity = 0.004;
 
 		// Raycaster properties
 		this.raycaster = new THREE.Raycaster();
@@ -99,7 +101,7 @@ class Player{
 		this.impactGeometry = new THREE.SphereGeometry( 0.05, 4, 2 );
 
 		// Player properties
-		this.MAX_HEALTH = 200;
+		this.MAX_HEALTH = 400;
 		this.KILL_HEAL = 60;	// Health gained after elimating an enemy
 		this.WEAPON_DAMAGE = 25;
 		this.WEAPON_HEAD_MODIFIER = 3;
@@ -135,12 +137,13 @@ class Player{
 					document.webkitExitPointerLock;
 
 		//this.element.requestPointerLock();
+		this.ui = this.game.ui;
+		this.ui.setPlayer(this);
 	}
 	
 	setCameraPosition(){
 		this.camera.position.copy(this.model.position);
 		this.camera.rotation.copy(this.model.rotation);
-		console.log(this.camera.rotation);
 		this.model.attach(this.camera);
 		this.camera.rotation.set(0, 0, 0);
 		this.camera.rotateY(Math.PI);
@@ -158,9 +161,9 @@ class Player{
 			return;
 		*/
 		// Change to game sensitivity
-		this.model.rotateY(-movementX * 0.005);
-		this.camera.rotateX(-movementY * 0.005);
-		this.model.neck.rotateX(-movementY * 0.005);
+		this.model.rotateY(-movementX * this.sensitivity);
+		this.camera.rotateX(-movementY * this.sensitivity);
+		this.model.neck.rotateX(-movementY * this.sensitivity);
 		if(this.camera.rotation.x > 0 && this.camera.rotation.x < Math.PI / 2)
 			this.camera.rotation.x = Math.PI / 2;
 		if(this.camera.rotation.x < 0 && this.camera.rotation.x > -2.34)
@@ -264,7 +267,7 @@ class Player{
 		this.game.scene.add(bullet);
 		this.bullets.push(bullet);
 		
-		this.light.intensity = 0.5;
+		this.light.intensity = 1.4;
 
 		this.nextShot = Date.now() + this.SHOOTING_COOLDOWN;
 	}
@@ -336,7 +339,7 @@ class Player{
 			this.game.scene.remove(bullet);
 		});
 		if(this.light.intensity > 0){
-			this.light.intensity -= 1 * dt;
+			this.light.intensity -= 2 * dt;
 		}
 	}
 
@@ -497,6 +500,7 @@ class Player{
 		
 		this.updateBullets(dt);
 		this.updateImpacts(dt);
+		this.updateGravity(dt);
 
 		if (this.isDead){
 			if(this.nextRespawn <= Date.now())
@@ -505,7 +509,6 @@ class Player{
 		}
 
 		this.updateMovement(dt);
-		this.updateGravity(dt);
 		this.updateCamera(dt);
 		this.shoot(dt);
 		

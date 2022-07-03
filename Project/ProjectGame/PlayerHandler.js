@@ -7,6 +7,7 @@ class PlayerHandler{
     constructor( game ){
         this.game = game;
         this.waypoints = game.waypoints;
+		this.player = null;
         this.load();
 		this.initMouseHandler();
 	}
@@ -133,7 +134,6 @@ class PlayerHandler{
 		this.player = player;
 		this.game.players.push(this.player);
 		this.game.player = this.player;
-		
 
 		this.game.startRendering();
 	}

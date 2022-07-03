@@ -175,12 +175,12 @@ class NPC{
 			this.dead();
 			return true;
 		}
-		console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
+		//console.log(this.name + " took " + damage + " damage. Current HP: " + this.currentHealth);
 		return false;
 	}
 
 	dead(){
-		console.log(this.name + " died.");
+		//console.log(this.name + " died.");
 		this.isDead = true;
 		this.deaths++;
 		this.action = "death_badguy";
@@ -196,7 +196,7 @@ class NPC{
 		this.action = 'idle';
 		this.hitbox.position.y = 0;
 		this.currentBehaviour = this.generalBehaviour;
-		console.log(this.name + " respawned.");
+		//console.log(this.name + " respawned.");
 	}
 
 	getNearPlayers(){

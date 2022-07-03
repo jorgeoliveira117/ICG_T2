@@ -1,0 +1,19 @@
+body{
+    margin: 0;  
+} 
+
+.crosshair{
+    position: fixed;
+    width: 32px;
+    right: calc(50% - 16px);
+    top: calc(50% - 16px);
+}
+
+.crosshair2{
+    position: fixed;
+    right: calc(50% - 1.5rem);
+    top: calc(50% - 1.5rem);
+    font-size: 3rem;
+    padding-bottom: 5px;
+    color: white;
+}
