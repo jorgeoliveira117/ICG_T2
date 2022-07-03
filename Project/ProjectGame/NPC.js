@@ -98,6 +98,7 @@ class NPC{
 		this.sfx.load('damaged', false, 0.35, 0.35, this.object);
 		this.sfx.load('death', false, 0.6, 0.6, this.object);
 		this.sfx.load('laser', false, 0.5, 0.5, this.object);
+		this.sfx.load('footsteps', true, 1, 1, this.object);
 	}
 
 	setTargetDirection(pt){
@@ -153,7 +154,11 @@ class NPC{
 				this.object.rifle.position.copy(WEAPON_POSITIONS[name.toLowerCase()]);
 			}
 			const action = this.mixer.clipAction( clip );
-			if (name.includes('firing')){
+			if(name.includes("run"))
+				this.sfx?.play("footsteps");
+			else
+				this.sfx?.stop("footsteps");
+			if(name.includes('firing')){
 				// Smoother animation
 				action.clampWhenFinished = true;
 				action.setLoop( THREE.LoopRepeat);

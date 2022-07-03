@@ -150,6 +150,7 @@ class Player{
 		this.sfx.load('death', false, 0.6, 0.6, this.object);
 		this.sfx.load('hitmark', false, 0.2, 0.2, this.object);
 		this.sfx.load('laser', false, 0.18, 0.18, this.object);
+		this.sfx.load('footsteps', true, 0.4, 0.4, this.object);
 	}
 	
 	setCameraPosition(){
@@ -305,6 +306,7 @@ class Player{
 
 	dead(){
 		console.log(this.name + " died.");
+		this.sfx.stop("footsteps");
 		this.sfx.play("death");
 		this.isDead = true;
 		this.deaths++;
@@ -461,10 +463,15 @@ class Player{
 			}
 		}
 		this.moving = moved;
-		if(moved)
+		if(moved){
 			this.action = (this.isFiring) ? 'firingmove' : 'running';
+			if(!this.isAirborne)
+				this.sfx.play("footsteps");
+		}
 		else
 			this.action = (this.isFiring) ? 'firinginplace' : 'idle';
+		if(this.isAirborne || !moved)
+			this.sfx.stop("footsteps");
 	}
 	
 	updateGravity(dt){
