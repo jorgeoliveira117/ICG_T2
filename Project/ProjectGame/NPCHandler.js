@@ -175,7 +175,7 @@ class NPCHandler{
 			});
 
 			const material = new MeshBasicMaterial( { color: 0x55AAFF } );
-			material.visible = true;
+			material.visible = false;
 			const headGeometry = new SphereGeometry( 0.15, 32, 16 );
 			const head = new Mesh( headGeometry, material );
 			const head2 = new Mesh( headGeometry, material );

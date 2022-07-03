@@ -74,7 +74,7 @@ class NPC{
 		this.ALERT_DETECTION_RANGE = 8;		// Distance where an NPC will look to a player
 		this.HUNT_FOV = 120;				// Angle in degrees for close detection
 		this.ALERT_FOV = 360;				// Angle in degrees for alert detection
-		this.DETECTION_INTERVAL = 1 * 1000;
+		this.DETECTION_INTERVAL = 0.4 * 1000;
 		this.nextDetection = Date.now() + this.DETECTION_INTERVAL;
 		this.currentTarget = null;			// Targeted player
 		// Types of behaviour
@@ -223,6 +223,12 @@ class NPC{
 		// if hunting check if target is closer to calculate new path
 		// verify if there's a wall between
 		if(p.behaviour == "alert"){
+			if(this.currentTarget){
+				if(p.players.includes(this.currentTarget))
+					console.log("nice")
+
+			}
+
 			// Get a random player
 			this.currentTarget = p.players[Math.floor(Math.random()*p.players.length)];
 			const targetPosition = this.currentTarget.name.includes("Player") ? this.currentTarget.model.position : this.currentTarget.object.position;
