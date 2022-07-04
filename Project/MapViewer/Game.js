@@ -169,7 +169,7 @@ class Game{
 								const baseColor = textureLoader
 									.load(this.assetsPath + "textures/grass/Stylized_Grass_003_basecolor.jpg");
 								baseColor.wrapS = baseColor.wrapT = THREE.RepeatWrapping;
-								baseColor.repeat.set(256, 256);
+								baseColor.repeat.set(256, 512);
 								baseColor.anisotropy = 16;
 								baseColor.encoding = THREE.sRGBEncoding;
 
@@ -181,12 +181,14 @@ class Game{
 									.load(this.assetsPath + "textures/grass/Stylized_Grass_003_normal.jpg");
 								const roughness = textureLoader
 									.load(this.assetsPath + "textures/grass/Stylized_Grass_003_roughness.jpg");
-
+								
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+									/*
 								material = new THREE.MeshLambertMaterial( { 
 									map: baseColor,
 									aoMap: ambientOcclusion
 								});
-								/*
 								material = new THREE.MeshLambertMaterial( { 
 									map: baseColor,
 									normalMap: normal,
