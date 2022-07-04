@@ -155,6 +155,13 @@ class Game{
 					}
 				});
 
+				const baseColor = (new THREE.TextureLoader()).load(this.assetsPath + "skybox.png");
+				const geometry = new THREE.SphereGeometry( 400, 32, 16 );
+				const material = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, map: baseColor } );
+				material.visible = true;
+				const sphere = new THREE.Mesh( geometry, material );
+				this.scene.add(sphere);
+
 				this.scene.add(this.navmesh);
 				this.initPathfinding(this.navmesh);
 
@@ -172,6 +179,8 @@ class Game{
 								baseColor.repeat.set(256, 512);
 								baseColor.anisotropy = 16;
 								baseColor.encoding = THREE.sRGBEncoding;
+								baseColor.minFilter = THREE.NearestMipMapLinearFilter;
+								baseColor.magFilter = THREE.NearestFilter;
 
 								const ambientOcclusion = textureLoader
 									.load(this.assetsPath + "textures/grass/Stylized_Grass_003_ambientOcclusion.jpg");
@@ -181,24 +190,15 @@ class Game{
 									.load(this.assetsPath + "textures/grass/Stylized_Grass_003_normal.jpg");
 								const roughness = textureLoader
 									.load(this.assetsPath + "textures/grass/Stylized_Grass_003_roughness.jpg");
-								
+
 								material = new THREE.MeshPhongMaterial();
 								material.map = baseColor;
-									/*
-								material = new THREE.MeshLambertMaterial( { 
-									map: baseColor,
-									aoMap: ambientOcclusion
-								});
-								material = new THREE.MeshLambertMaterial( { 
-									map: baseColor,
-									normalMap: normal,
-									displacementMap: height,
-									displacementScale: 0.5,
-									roughnessMap: roughness,
-									roughness: 0.5,
-									aoMap: ambientOcclusion
-								});
-								*/
+								material.bumpMap = height;
+								material.bumpScale = 0.25;
+								material.normalMap = normal;
+								material.aoMap = ambientOcclusion;
+								material.aoMapIntensity = 0.5;
+								material.specularMap = roughness;
 							}
 							else if(mat.includes("Mountain")){
 								const textureLoader = new THREE.TextureLoader();
@@ -218,21 +218,14 @@ class Game{
 								const roughness = textureLoader
 									.load(this.assetsPath + "textures/snow/Snow_001_ROUGH.jpg");
 
-								material = new THREE.MeshLambertMaterial( { 
-									map: baseColor,
-									aoMap: ambientOcclusion
-								});
-								/*
-								material = new THREE.MeshLambertMaterial( { 
-									map: baseColor,
-									normalMap: normal,
-									displacementMap: height,
-									displacementScale: 0.5,
-									roughnessMap: roughness,
-									roughness: 0.5,
-									aoMap: ambientOcclusion
-								});
-								*/
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+								material.bumpMap = height;
+								material.bumpScale = 0.25;
+								material.normalMap = normal;
+								material.aoMap = ambientOcclusion;
+								material.aoMapIntensity = 0.5;
+								material.specularMap = roughness;
 							}
 							else if(mat.includes("Orange_3")){
 								const textureLoader = new THREE.TextureLoader();
@@ -242,30 +235,100 @@ class Game{
 								baseColor.repeat.set(64, 64);
 								baseColor.anisotropy = 16;
 								baseColor.encoding = THREE.sRGBEncoding;
-
 								const ambientOcclusion = textureLoader
 									.load(this.assetsPath + "textures/sand/Stylized_Sand_001_ambientOcclusion.jpg");
 								const height = textureLoader
-									.load(this.assetsPath + "textures/sand/Stylized_Sand_001_height.png.png");
+									.load(this.assetsPath + "textures/sand/Stylized_Sand_001_height.png");
 								const normal = textureLoader
 									.load(this.assetsPath + "textures/sand/Stylized_Sand_001_normal.jpg");
 								const roughness = textureLoader
 									.load(this.assetsPath + "textures/sand/Stylized_Sand_001_roughness.jpg");
-								/*
-								material = new THREE.MeshLambertMaterial( { 
-									map: baseColor,
-									aoMap: ambientOcclusion
-								});
-								*/
-								material = new THREE.MeshStandardMaterial( { 
-									map: baseColor,
-									normalMap: normal,
-									displacementMap: height,
-									displacementScale: 0.5,
-									roughnessMap: roughness,
-									roughness: 0.5,
-									aoMap: ambientOcclusion
-								});
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+								material.bumpMap = height;
+								material.bumpScale = 0.5;
+								material.normalMap = normal;
+								material.aoMap = ambientOcclusion;
+								material.aoMapIntensity = 0.5;
+								material.specularMap = roughness;
+							}
+							else if(mat.includes("Wood_1")){
+								const textureLoader = new THREE.TextureLoader();
+								const baseColor = textureLoader
+									.load(this.assetsPath + "textures/stone/TexturesCom_Pavement_CobblestoneMedieval11_4x4_512_albedo.png");
+								baseColor.wrapS = baseColor.wrapT = THREE.RepeatWrapping;
+								baseColor.repeat.set(4, 8);
+								baseColor.anisotropy = 16;
+								baseColor.encoding = THREE.sRGBEncoding;
+								const height = textureLoader
+									.load(this.assetsPath + "textures/stone/TexturesCom_Pavement_CobblestoneMedieval11_4x4_512_height.png");
+								const normal = textureLoader
+									.load(this.assetsPath + "textures/stone/TexturesCom_Pavement_CobblestoneMedieval11_4x4_512_normal.png");
+							
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+								material.bumpMap = height;
+								material.bumpScale = 0.8;
+								material.normalMap = normal;
+							}
+							else if(mat.includes("Barrier")){
+								const textureLoader = new THREE.TextureLoader();
+								const baseColor = textureLoader
+									.load(this.assetsPath + "textures/brick/TexturesCom_BrickRound0044_1_seamless_S.jpg");
+								baseColor.wrapS = baseColor.wrapT = THREE.RepeatWrapping;
+								baseColor.repeat.set(16, 16);
+								baseColor.anisotropy = 16;
+								baseColor.encoding = THREE.sRGBEncoding;
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+							}
+							else if(mat.includes("Brown_10")){		
+								const textureLoader = new THREE.TextureLoader();
+								const baseColor = textureLoader
+									.load(this.assetsPath + "textures/rough_sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_albedo.png");
+								baseColor.wrapS = baseColor.wrapT = THREE.RepeatWrapping;
+								baseColor.repeat.set(64, 64);
+								baseColor.anisotropy = 16;
+								baseColor.encoding = THREE.sRGBEncoding;
+								const height = textureLoader
+									.load(this.assetsPath + "textures/rough_sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_height.png");
+								const normal = textureLoader
+									.load(this.assetsPath + "textures/rough_sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_normal.png");
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+								material.bumpMap = height;
+								material.bumpScale = 0.5;
+								material.normalMap = normal;
+							}
+							else if(mat.includes("SandyWalls")){
+								const textureLoader = new THREE.TextureLoader();
+								const baseColor = textureLoader
+									.load(this.assetsPath + "textures/smooth_sand/TexturesCom_Ground_Sand1_2x2_512_albedo.png");
+								baseColor.wrapS = baseColor.wrapT = THREE.RepeatWrapping;
+								baseColor.repeat.set(256, 256);
+								baseColor.anisotropy = 16;
+								baseColor.encoding = THREE.sRGBEncoding;
+								const height = textureLoader
+									.load(this.assetsPath + "textures/smooth_sand/TexturesCom_Ground_Sand1_2x2_512_height.png");
+								const normal = textureLoader
+									.load(this.assetsPath + "textures/smooth_sand/TexturesCom_Ground_Sand1_2x2_512_normal.png");
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
+								material.bumpMap = height;
+								material.bumpScale = 0.5;
+								material.normalMap = normal;
+							}
+							else if(mat.includes("Building")){
+								const textureLoader = new THREE.TextureLoader();
+								const baseColor = textureLoader
+									.load(this.assetsPath + "textures/planks/TexturesCom_WoodPlanksOld0250_3_seamless_S.jpg");
+								baseColor.wrapS = baseColor.wrapT = THREE.RepeatWrapping;
+								baseColor.repeat.set(32, 16);
+								baseColor.anisotropy = 16;
+								baseColor.encoding = THREE.sRGBEncoding;
+								baseColor.rotation = Math.PI/2;
+								material = new THREE.MeshPhongMaterial();
+								material.map = baseColor;
 							}
 							else{
 								//console.log(object.material.map)
@@ -278,8 +341,8 @@ class Game{
 						object.material = material;
 					})
 				}
-
-				this.renderer.setAnimationLoop(this.render.bind(this));
+				this.environmentReady = true;
+				this.startRendering();
 			},
 			xhr => {
 			},
@@ -287,7 +350,7 @@ class Game{
 				console.error( err );
 			}
 		);
-	}			
+	}				
     
 	get randomSpawnpoint(){
 		const index = Math.floor(Math.random()*SPAWN_POINTS.length);
